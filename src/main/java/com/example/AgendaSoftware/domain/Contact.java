@@ -202,7 +202,19 @@ public class Contact implements Serializable {
 
     @Override
     public String toString() {
-        return "proyectokajoy.ucb.edu.bo.clases.Contact[ idContact=" + idContact + " ]";
+        return "Contact{" +
+                "idContact=" + idContact +
+                ", firstName='" + firstName + '\'' +
+                ", secondName='" + secondName + '\'' +
+                ", firstLastName='" + firstLastName + '\'' +
+                ", secondLastName='" + secondLastName + '\'' +
+                ", mail='" + mail + '\'' +
+                ", dateBorn='" + dateBorn + '\'' +
+                ", image=" + image +
+                ", status='" + status + '\'' +
+                ", phoneList='" + phoneList  + '\'' +
+                ", idUserContact=" + idUserContact +
+                '}';
     }
 
 }
