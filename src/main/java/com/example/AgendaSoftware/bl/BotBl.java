@@ -100,18 +100,19 @@ public class BotBl {
 
                             contactList.size();
                             sendMessage.setChatId(chatId)
-                                    .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail());
+                                    .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail()+"\n"+
+                                            contactList.get(1).getFirstName()+"\n"+ contactList.get(1).getSecondName()+"\n"+contactList.get(1).getMail());
                             break;
 
-//                        default:
-//                            sendMessage.setChatId(chatId)
-//                                    .setText("No lo entiendo\n");
-//                            row.add("Soy Docente");
-//                            row.add("Soy Estudiante");
-//                            keyboard.add(row);
-//                            keyboardMarkup.setKeyboard(keyboard);
-//                            sendMessage.setReplyMarkup(keyboardMarkup);
-//                            break;
+                        default:
+                            sendMessage.setChatId(chatId)
+                                    .setText("No lo entiendo\n");
+                            row.add("Soy Docente");
+                            row.add("Soy Estudiante");
+                            keyboard.add(row);
+                            keyboardMarkup.setKeyboard(keyboard);
+                            sendMessage.setReplyMarkup(keyboardMarkup);
+                            break;
                     }
                 } catch (NumberFormatException nfe){
                     sendMessage.setChatId(chatId)
@@ -155,14 +156,8 @@ public class BotBl {
 
     private void setModulesMessages(Update update,SendMessage sendMessage,String messageTextReceived){
         if(messageBl.isEntra_a_registro_docente()){
-//            try{
-//                LOGGER.info("MODULESMESSAGE"+messageBl.entraRegistroDocente(sendMessage,messageTextReceived));
-
             sendMessage.setText(messageBl.entraRegistroDocente(sendMessage,messageTextReceived));
-//            }
-//            catch (NullPointerException e){
-//                sendMessage.setText("Devuelve Nulo");
-//            }
+
         }
     }
 
