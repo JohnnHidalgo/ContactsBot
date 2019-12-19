@@ -1,17 +1,20 @@
 package com.example.AgendaSoftware.bot;
 
 import com.example.AgendaSoftware.bl.BotBl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainBot extends TelegramLongPollingBot {
 
     BotBl botBl;
-
     public MainBot(BotBl botBl){
         this.botBl = botBl;
     }
@@ -27,7 +30,6 @@ public class MainBot extends TelegramLongPollingBot {
             botBl.processUpdateMesage(update,message,photo);
              try {
                  if(message == null){
-
                      message.setText("No entiendo lo que me quieres decir");
                      this.execute(message);
                  }else if(photo.getPhoto() == null && message!=null){

@@ -14,7 +14,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,31 +27,26 @@ public class BotBl {
     private PhoneRepository phoneRepository;
     private ChatRepository chatRepository;
     public  Boolean firstMessage = true;
-
+    MessageBl messageBl;
 
     @Autowired
-    public BotBl(UserRepository userRepository, PhoneRepository phoneRepository, ChatRepository chatRepository) {
+    public BotBl(UserRepository userRepository, PhoneRepository phoneRepository, ChatRepository chatRepository, MessageBl messageBl) {
         this.userRepository = userRepository;
         this.phoneRepository = phoneRepository;
         this.chatRepository = chatRepository;
+        this.messageBl = messageBl;
     }
 
-
-    public List<String> processUpdateMesage(Update update, SendMessage message, SendPhoto photo) {
+    public void processUpdateMesage(Update update,SendMessage message, SendPhoto photo){
         LOGGER.info("RECIBIENDO UPDATE en SEND MESSAGE",update);
-        List<String> chatResponse = new ArrayList<>();
         User user = initUser(update.getMessage().getFrom());
         message.setChatId(update.getMessage().getChatId());
         photo.setChatId(update.getMessage().getChatId());
         coninueChatWithUser(update, user, message,photo);
-        return chatResponse;
-
     }
 
     public void coninueChatWithUser(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto) {
-
         Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
-
         String messageInput = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
         String messageTextReceived = update.getMessage().getText();
@@ -69,65 +63,46 @@ public class BotBl {
         } else {
             if (messageInput.equals("/start") || firstMessage==false){
                 firstMessage = false;
+                setModulesMessages(update,sendMessage,messageTextReceived);
                 try {
                     switch(messageInput) {
-                        case "Men":
-                            LOGGER.info("ENTRO A PRUEBA DE MULTIMENSAJE");
-                            sendMessage.setChatId(chatId)
-                                    .setText("MULTIMENSAJE");
-                            row.add("Comenzar");
-                            row.add("Información");
-                            keyboard.add(row);
-                            keyboardMarkup.setKeyboard(keyboard);
-                            sendMessage.setReplyMarkup(keyboardMarkup);
-                            imageFile = "https://image.shutterstock.com/z/stock-vector-bienvenido-welcome-spanish-text-lettering-vector-illustration-1050015260.jpg";
-                            sendPhoto.setChatId(chatId)
-                                    .setPhoto(imageFile);
-                            break;
                         case "/start":
-                            imageFile = "https://image.shutterstock.com/z/stock-vector-bienvenido-welcome-spanish-text-lettering-vector-illustration-1050015260.jpg";
+                            imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
                             sendPhoto.setChatId(chatId)
                                     .setPhoto(imageFile);
                             sendMessage.setChatId(chatId)
-                                    .setText("Seleccione una opción por favor\nComenzar\nInformacion");
-                            row.add("Comenzar");
-                            row.add("Información");
+                                    .setText("Que gusto verte denuevo!\nSeleciona una opcion por favor");
+                            row.add("Registrar Contacto");
+                            row.add("Buscar");
                             keyboard.add(row);
                             keyboardMarkup.setKeyboard(keyboard);
                             sendMessage.setReplyMarkup(keyboardMarkup);
                             break;
-                        case "Información":
-                            imageFile = "https://pngimage.net/wp-content/uploads/2018/06/informaci%C3%B3n-png-1.png";
+
+                        case "Registrar Contacto":
+                            messageBl.setEntra_a_registro_docente(true);
+                            imageFile = "https://i2.wp.com/mundialdecruceros.com/wp-content/uploads/2019/07/Contacto.png?fit=200%2C238&ssl=1";
+                            sendMessage.setChatId(chatId)
+                                    .setText("Vamos a registrar un nuevo contacto \nIngresa el nombre por favor");
                             sendPhoto.setChatId(chatId)
                                     .setPhoto(imageFile);
-                            sendMessage.setChatId(chatId)
-                                    .setText("Somos una plataforma para crear test interactivos! \nLos docentes pueden crear test para enviarlos a sus alumnos y ver la puntuación de cada alumno \n ");
                             break;
-                        case "Comenzar":
-                            sendMessage.setChatId(chatId)
-                                    .setText("Bienvenido!!\nEres Docente o Estudiante");
-                            row.add("Soy Docente");
-                            row.add("Soy Estudiante");
-                            keyboard.add(row);
-                            keyboardMarkup.setKeyboard(keyboard);
-                            sendMessage.setReplyMarkup(keyboardMarkup);
-                            break;
-                        default:
-                            sendMessage.setChatId(chatId)
-                                    .setText("No lo entiendo\n");
-                            row.add("Soy Docente");
-                            row.add("Soy Estudiante");
-                            keyboard.add(row);
-                            keyboardMarkup.setKeyboard(keyboard);
-                            sendMessage.setReplyMarkup(keyboardMarkup);
-                            break;
+
+//                        default:
+//                            sendMessage.setChatId(chatId)
+//                                    .setText("No lo entiendo\n");
+//                            row.add("Soy Docente");
+//                            row.add("Soy Estudiante");
+//                            keyboard.add(row);
+//                            keyboardMarkup.setKeyboard(keyboard);
+//                            sendMessage.setReplyMarkup(keyboardMarkup);
+//                            break;
                     }
                 } catch (NumberFormatException nfe){
                     sendMessage.setChatId(chatId)
                             .setText("DEFAULT");
                 }
             }
-
             else {
                 sendMessage.setChatId(chatId)
                         .setText("Hola, para empezar el bot por favor escribe /start");
@@ -137,13 +112,12 @@ public class BotBl {
         Chat chat = new Chat();
         chat.setIdUserChat(user);
         chat.setInMessage(update.getMessage().getText());
-        chat.setOutMessage(sendMessage.getText());
+        chat.setOutMessage("outMessage");
         chat.setDateMessage(new Date());
         chat.setTxDate(new Date());
         chat.setTxUser(user.getIdUser().toString());
         chat.setTxHost(update.getMessage().getChatId().toString());
 
-        // Guardamos en base dedatos
         chatRepository.save(chat);
     }
 
@@ -161,5 +135,19 @@ public class BotBl {
             userRepository.save(userBotBl);
         }
         return userBotBl;
+    }
+
+
+    private void setModulesMessages(Update update,SendMessage sendMessage,String messageTextReceived){
+        if(messageBl.isEntra_a_registro_docente()){
+//            try{
+//                LOGGER.info("MODULESMESSAGE"+messageBl.entraRegistroDocente(sendMessage,messageTextReceived));
+
+            sendMessage.setText(messageBl.entraRegistroDocente(sendMessage,messageTextReceived));
+//            }
+//            catch (NullPointerException e){
+//                sendMessage.setText("Devuelve Nulo");
+//            }
+        }
     }
 }
