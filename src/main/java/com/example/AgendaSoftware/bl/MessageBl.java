@@ -12,11 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MessageBl {
@@ -45,6 +44,7 @@ public class MessageBl {
     public static int getNumero_de_pregunta() {
         return numero_de_pregunta;
     }
+
     public static void setNumero_de_pregunta(int numero_de_pregunta) {
         MessageBl.numero_de_pregunta = numero_de_pregunta;
     }
@@ -73,6 +73,12 @@ public class MessageBl {
         System.out.println(mensaje);
         sendMessage.setText(mensaje);
         return mensaje;
+    }
+    public List<Contact> listaDeContactpos(SendMessage sendMessage,String messageTextReceived){
+        User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
+        List<Contact> contactList = contactRepository.findAll();
+
+        return contactList;
     }
 
 
@@ -115,54 +121,29 @@ public class MessageBl {
 
         Contact contact =new Contact();
 
-        User user = new User();
-        user.setIdUser(1);
-        user.setIdUserbot("839691450");
-        user.setName("Johnn");
-        user.setLastName("Hidalgo");
-        user.setTxHost("localhost");
-        user.setTxDate(new Date());
 
-        contact.setIdUserContact(user);
-        contact.setFirstName("Jaime");
-        contact.setSecondName("Fernando");
-        contact.setFirstLastName("Torrez");
-        contact.setSecondLastName("Conda");
-        contact.setMail("Jaime@gmail.com");
+        User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
+        System.out.println(userTest);
+        contact.setIdUserContact(userTest);
+        contact.setFirstName(listaderegistros.get(0));
+        contact.setSecondName(listaderegistros.get(1));
+        contact.setFirstLastName(listaderegistros.get(2));
+        contact.setSecondLastName(listaderegistros.get(3));
+        contact.setMail(listaderegistros.get(4));
         contact.setDateBorn(new Date());
         contact.setImage("No Image");
         contact.setStatus(Status.ACTIVE.getStatus());
         contactRepository.save(contact);
 
-        Phone phone = new Phone();
-        phone.setIdContactPhone(contact);
-        phone.setNumberPhone("74563215");
-        phone.setStatus(Status.ACTIVE.getStatus());
-        phoneRepository.save(phone);
+//        Phone phone = new Phone();
+//        phone.setIdContactPhone(contact);
+//        phone.setNumberPhone("74563215");
+//        phone.setStatus(Status.ACTIVE.getStatus());
+//        phoneRepository.save(phone);
 
         return "¡Registro completado exitosamente¡";
     }
 
-//    public String saveContactInfo(List<String> contactDatainfo, SendMessage sendMessage){
-//        User user = userRepository.findByIdUserbot(sendMessage.getChatId());
-//        List<Phone> phoneList = new ArrayList<>();
-//
-//        Phone phone = new Phone();
-//        phone.setNumberPhone(contactDatainfo.get(6));
-//        phoneList.add(phone);
-//        /*******************/
-//        Contact contact =new Contact();
-//        contact.setFirstName(contactDatainfo.get(0));
-//        contact.setSecondName(contactDatainfo.get(1));
-//        contact.setFirstLastName(contactDatainfo.get(2));
-//        contact.setSecondLastName(contactDatainfo.get(3));
-//        contact.setMail(contactDatainfo.get(4));
-//        contact.setPhoneList(phoneList);
-//        contact.setDateBorn(new Date());
-//        contact.setImage("No Image");
-//        contactRepository.save(contact);
-//        return "¡Registro completado exitosamente¡";
-//    }
 
     public static boolean isEntra_a_registro_docente() {
         return entra_a_registro_docente;
@@ -170,40 +151,6 @@ public class MessageBl {
 
     public static void setEntra_a_registro_docente(boolean entra_a_registro_docente) {
         MessageBl.entra_a_registro_docente = entra_a_registro_docente;
-    }
-
-    public  String guardarListaRegistrosDocente(List<String> listaderegistros){
-        LOGGER.info("Llega al metodo con : ");
-
-//        for (String lag:listaderegistros){
-//            LOGGER.info("Elemento : "+lag);
-//        }
-        List<Phone> phoneList = new ArrayList<>();
-
-        Phone phone = new Phone();
-        phone.setNumberPhone("70562315");
-        phoneList.add(phone);
-        Contact contact =new Contact();
-        contact.setFirstName("Jaime");
-        contact.setSecondName("Fernando");
-        contact.setFirstLastName("Torrez");
-        contact.setSecondLastName("Conda");
-        contact.setMail("Jaime@gmail.com");
-        contact.setPhoneList(phoneList);
-        contact.setDateBorn(new Date());
-        contact.setImage("No Image");
-        contactRepository.save(contact);
-
-//        DocenteEntity docenteEntity=new DocenteEntity();
-//        docenteEntity.setNombre(listaderegistros.get(0));
-//        docenteEntity.setApellidoPaterno(listaderegistros.get(1));
-//        docenteEntity.setApellidoMaterno(listaderegistros.get(2));
-//        docenteEntity.setStatuss(Status.ACTIVE.getStatus());
-//        docenteEntity.setTxUser(listaderegistros.get(3));
-//        docenteEntity.setTxDate(new Date());
-//        LOGGER.info("Entidad docente "+docenteEntity.toString());
-//        docenteRespository.save(docenteEntity);
-        return "¡Registro completado exitosamente¡";
     }
 
 }

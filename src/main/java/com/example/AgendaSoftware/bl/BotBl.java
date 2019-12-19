@@ -1,9 +1,11 @@
 package com.example.AgendaSoftware.bl;
 
 import com.example.AgendaSoftware.dao.ChatRepository;
+import com.example.AgendaSoftware.dao.ContactRepository;
 import com.example.AgendaSoftware.dao.PhoneRepository;
 import com.example.AgendaSoftware.dao.UserRepository;
 import com.example.AgendaSoftware.domain.Chat;
+import com.example.AgendaSoftware.domain.Contact;
 import com.example.AgendaSoftware.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BotBl {
@@ -26,14 +29,16 @@ public class BotBl {
     private UserRepository userRepository;
     private PhoneRepository phoneRepository;
     private ChatRepository chatRepository;
+    private ContactRepository contactRepository;
     public  Boolean firstMessage = true;
     MessageBl messageBl;
 
     @Autowired
-    public BotBl(UserRepository userRepository, PhoneRepository phoneRepository, ChatRepository chatRepository, MessageBl messageBl) {
+    public BotBl(UserRepository userRepository, PhoneRepository phoneRepository, ChatRepository chatRepository, ContactRepository contactRepository,MessageBl messageBl) {
         this.userRepository = userRepository;
         this.phoneRepository = phoneRepository;
         this.chatRepository = chatRepository;
+        this.contactRepository = contactRepository;
         this.messageBl = messageBl;
     }
 
@@ -86,6 +91,16 @@ public class BotBl {
                                     .setText("Vamos a registrar un nuevo contacto \nIngresa el nombre por favor");
                             sendPhoto.setChatId(chatId)
                                     .setPhoto(imageFile);
+                            break;
+                        case "Buscar":
+                            List<Contact> contactList = new ArrayList<>();
+                            contactList = messageBl.listaDeContactpos(sendMessage,messageTextReceived);
+
+                            LOGGER.info(contactList.get(0).getFirstName());
+
+                            contactList.size();
+                            sendMessage.setChatId(chatId)
+                                    .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail());
                             break;
 
 //                        default:
@@ -150,4 +165,8 @@ public class BotBl {
 //            }
         }
     }
+
+
+
+
 }
