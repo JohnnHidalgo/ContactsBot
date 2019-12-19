@@ -3,6 +3,7 @@ package com.example.AgendaSoftware.bot;
 import com.example.AgendaSoftware.bl.BotBl;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.List;
@@ -20,17 +21,28 @@ public class MainBot extends TelegramLongPollingBot {
         System.out.println(update);
         update.getMessage().getFrom().getId();
         if (update.hasMessage() && update.getMessage().hasText()) {
-            List<String> messages = botBl.processUpdate(update);
-            for(String messageText: messages) {
-                SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
-                        .setChatId(update.getMessage().getChatId())
-                        .setText(messageText);
-                try {
-                    this.execute(message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-            }
+            SendMessage message=new SendMessage();
+            SendPhoto photo = new SendPhoto();
+
+            botBl.processUpdateMesage(update,message,photo);
+             try {
+                 if(message == null){
+
+                     message.setText("No entiendo lo que me quieres decir");
+                     this.execute(message);
+                 }else if(photo.getPhoto() == null && message!=null){
+                     this.execute(message);
+                 }else if (message != null && photo.getPhoto() != null){
+                     this.execute(message);
+                     this.execute(photo);
+                 }
+             } catch (TelegramApiException e) {
+                 e.printStackTrace();
+             }
+             catch(NullPointerException e )
+             {
+                 System.out.print("NullPointerException caught");
+             }
         }
     }
 
