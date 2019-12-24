@@ -71,6 +71,10 @@ public class BotBl {
                 setModulesMessages(update,sendMessage,messageTextReceived);
                 try {
                     switch(messageInput) {
+                        case "inicio":
+                            sendMessage.setChatId(chatId)
+                                    .setText(messageBl.inicioMensaje(sendMessage,sendPhoto,update));
+                            break;
                         case "/start":
                             imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
                             sendPhoto.setChatId(chatId)
@@ -93,6 +97,9 @@ public class BotBl {
                                     .setPhoto(imageFile);
                             break;
                         case "Buscar":
+//                            User user1 = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+//                            List<Contact> contactList = contactRepository.findAllByIdUserContact(user1);
+
                             List<Contact> contactList = new ArrayList<>();
                             contactList = messageBl.listaDeContactpos(sendMessage,messageTextReceived);
 
@@ -104,15 +111,15 @@ public class BotBl {
                                             contactList.get(1).getFirstName()+"\n"+ contactList.get(1).getSecondName()+"\n"+contactList.get(1).getMail());
                             break;
 
-                        default:
-                            sendMessage.setChatId(chatId)
-                                    .setText("No lo entiendo\n");
-                            row.add("Soy Docente");
-                            row.add("Soy Estudiante");
-                            keyboard.add(row);
-                            keyboardMarkup.setKeyboard(keyboard);
-                            sendMessage.setReplyMarkup(keyboardMarkup);
-                            break;
+//                        default:
+//                            sendMessage.setChatId(chatId)
+//                                    .setText("No lo entiendo\n");
+//                            row.add("Soy Docente");
+//                            row.add("Soy Estudiante");
+//                            keyboard.add(row);
+//                            keyboardMarkup.setKeyboard(keyboard);
+//                            sendMessage.setReplyMarkup(keyboardMarkup);
+//                            break;
                     }
                 } catch (NumberFormatException nfe){
                     sendMessage.setChatId(chatId)

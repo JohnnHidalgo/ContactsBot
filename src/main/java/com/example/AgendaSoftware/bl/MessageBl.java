@@ -3,6 +3,7 @@ package com.example.AgendaSoftware.bl;
 import com.example.AgendaSoftware.dao.ContactRepository;
 import com.example.AgendaSoftware.dao.PhoneRepository;
 import com.example.AgendaSoftware.dao.UserRepository;
+import com.example.AgendaSoftware.domain.Chat;
 import com.example.AgendaSoftware.domain.Contact;
 import com.example.AgendaSoftware.domain.Phone;
 import com.example.AgendaSoftware.domain.User;
@@ -12,6 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,12 +39,33 @@ public class MessageBl {
     private PhoneBl phoneBl;
     private ContactBl contactBl;
 
+//    Update update;
+//    User user;
+//    SendMessage sendMessage;
+//    SendPhoto sendPhoto;
+//    String messageInput = update.getMessage().getText();
+//    long chatId = update.getMessage().getChatId();
+//    String messageTextReceived = update.getMessage().getText();
+//        LOGGER.info("Ultimo mensaje "+update.getMessage().getText());
+//    String imageFile = null;
+//    ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+//    List<KeyboardRow> keyboard = new ArrayList<>();
+//    KeyboardRow row = new KeyboardRow();
+//        sendMessage.setChatId(chatId);
+
+
     @Autowired
     public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository){
         this.phoneBl = phoneBl;
         this.contactBl = contactBl;
         this.contactRepository = contactRepository;
         this.userRepository = userRepository;
+    }
+
+    //sendMessage,sendPhoto,update
+    public static String inicioMensaje(SendMessage sendMessage, SendPhoto sendPhoto, Update update){
+        String response ="Bienvenido";
+        return response;
     }
 
     public static int getNumero_de_pregunta() {
@@ -76,6 +103,8 @@ public class MessageBl {
     }
     public List<Contact> listaDeContactpos(SendMessage sendMessage,String messageTextReceived){
         User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
+
+
         List<Contact> contactList = contactRepository.findAll();
 
         return contactList;
@@ -135,9 +164,11 @@ public class MessageBl {
         contact.setStatus(Status.ACTIVE.getStatus());
         contactRepository.save(contact);
 
+
+//        Contact contactPhone = contactRepository.findById(contact.getIdUserContact());
 //        Phone phone = new Phone();
-//        phone.setIdContactPhone(contact);
-//        phone.setNumberPhone("74563215");
+//        phone.setIdContactPhone(contactPhone);
+//        phone.setNumberPhone(listaderegistros.get(5));
 //        phone.setStatus(Status.ACTIVE.getStatus());
 //        phoneRepository.save(phone);
 
