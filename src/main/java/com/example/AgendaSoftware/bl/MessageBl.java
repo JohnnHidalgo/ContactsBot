@@ -30,7 +30,7 @@ public class MessageBl {
     private static int numero_de_pregunta=0;
     private static boolean registrosllenos=false;
     private static boolean entra_a_registro_docente=false;
-    private static List<String> registrollenadosList= new ArrayList<>();
+    private static List<String> registUserList= new ArrayList<>();
 
     /*******/
     private ContactRepository contactRepository;
@@ -38,21 +38,6 @@ public class MessageBl {
     private PhoneRepository phoneRepository;
     private PhoneBl phoneBl;
     private ContactBl contactBl;
-
-//    Update update;
-//    User user;
-//    SendMessage sendMessage;
-//    SendPhoto sendPhoto;
-//    String messageInput = update.getMessage().getText();
-//    long chatId = update.getMessage().getChatId();
-//    String messageTextReceived = update.getMessage().getText();
-//        LOGGER.info("Ultimo mensaje "+update.getMessage().getText());
-//    String imageFile = null;
-//    ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-//    List<KeyboardRow> keyboard = new ArrayList<>();
-//    KeyboardRow row = new KeyboardRow();
-//        sendMessage.setChatId(chatId);
-
 
     @Autowired
     public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository){
@@ -63,10 +48,58 @@ public class MessageBl {
     }
 
     //sendMessage,sendPhoto,update
-    public static String inicioMensaje(SendMessage sendMessage, SendPhoto sendPhoto, Update update){
-        String response ="Bienvenido";
-        return response;
+    public static void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        sendMessage.setChatId(chatId);
+
+        sendPhoto.setChatId(chatId)
+                .setPhoto(imageFile);
+        sendMessage.setChatId(chatId)
+                .setText("Que gusto verte denuevo!\nSeleciona una opcion por favor");
+
+        row.add("Registrar Contacto");
+        row.add("Buscar");
+        keyboard.add(row);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
     }
+
+
+
+    public static void registerConact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        String responce= null;
+        long chatId = update.getMessage().getChatId();
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        sendMessage.setChatId(chatId);
+        int count = 8;
+        while(count<=8){
+            responce = messageSaveContact(count);
+            sendMessage.setChatId(chatId)
+                    .setText(responce);
+            row.add("Siguiente");
+            keyboard.add(row);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+
+            registUserList.add(update.getMessage().getText());
+            count++;
+        }
+
+//        sendPhoto.setChatId(chatId)
+//                .setPhoto(imageFile);
+//        sendMessage.setChatId(chatId)
+//                .setText("Registro completado");
+
+
+    }
+
 
     public static int getNumero_de_pregunta() {
         return numero_de_pregunta;
@@ -76,31 +109,31 @@ public class MessageBl {
         MessageBl.numero_de_pregunta = numero_de_pregunta;
     }
 
-    public String entraRegistroDocente(SendMessage sendMessage,String messageTextReceived){
-        System.out.println("Entra a el registro docente oficial");
-        LOGGER.info("Entra a el registro docente oficial");
-        String mensaje="";
-        if(registrollenadosList.size()<8)
-        {
-            LOGGER.info("Entra al registros no llenos");
-            if(getNumero_de_pregunta()<7){
-                mensaje = messageSaveContact();
-            }
-            setNumero_de_pregunta(getNumero_de_pregunta()+1) ;//
-            registrollenadosList.add(messageTextReceived);
-        }
-        if (registrollenadosList.size()==7) {
-            LOGGER.info("Ingresa a registros llenos");
-            mensaje = guardarListaRegistros(registrollenadosList, sendMessage);
-            registrosllenos = false;
-            registrollenadosList.clear();
-            entra_a_registro_docente = false;
-            setNumero_de_pregunta(0) ;//
-        }
-        System.out.println(mensaje);
-        sendMessage.setText(mensaje);
-        return mensaje;
-    }
+//    public String entraRegistroDocente(SendMessage sendMessage,String messageTextReceived){
+//        System.out.println("Entra a el registro docente oficial");
+//        LOGGER.info("Entra a el registro docente oficial");
+//        String mensaje="";
+//        if(registrollenadosList.size()<8)
+//        {
+//            LOGGER.info("Entra al registros no llenos");
+//            if(getNumero_de_pregunta()<7){
+//                mensaje = messageSaveContact(4);
+//            }
+//            setNumero_de_pregunta(getNumero_de_pregunta()+1) ;//
+//            registrollenadosList.add(messageTextReceived);
+//        }
+//        if (registrollenadosList.size()==7) {
+//            LOGGER.info("Ingresa a registros llenos");
+//            mensaje = guardarListaRegistros(registrollenadosList, sendMessage);
+//            registrosllenos = false;
+//            registrollenadosList.clear();
+//            entra_a_registro_docente = false;
+//            setNumero_de_pregunta(0) ;//
+//        }
+//        System.out.println(mensaje);
+//        sendMessage.setText(mensaje);
+//        return mensaje;
+//    }
     public List<Contact> listaDeContactpos(SendMessage sendMessage,String messageTextReceived){
         User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
 
@@ -111,34 +144,38 @@ public class MessageBl {
     }
 
 
-    public String messageSaveContact() {
+    public static String messageSaveContact(int qu) {
         String responces=new String();
-        switch (numero_de_pregunta){
+        switch (qu){
             case 0:
+                LOGGER.info("Pedir de Primer Nombre");
+                responces="Ingrese Primer Nombre";
+                break;
+            case 1:
                 LOGGER.info("Pedir de Segundo Nombre");
                 responces="Ingrese Segundo Nombre";
                 break;
-            case 1:
+            case 2:
                 LOGGER.info("Pedir primer apellido");
                 responces="Ingrese Primer Apellido";
                 break;
-            case 2:
+            case 3:
                 LOGGER.info("Pedir segundo Apellido");
                 responces="Ingese segundo Apellido";
                 break;
-            case 3:
+            case 4:
                 LOGGER.info("Pedir correo");
                 responces="Ingese email";
                 break;
-            case 4:
+            case 5:
                 LOGGER.info("Pedir numero");
                 responces="Ingese numero telefónico";
                 break;
-            case 5:
+            case 6:
                 LOGGER.info("Pedir nacimiento");
                 responces="Ingese fecha de nacimiento";
                 break;
-            case 6:
+            case 7:
                 LOGGER.info("Pedir imagen");
                 responces="Ingese imagen para el contacto";
                 break;

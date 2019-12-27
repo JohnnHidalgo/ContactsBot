@@ -66,35 +66,22 @@ public class BotBl {
             sendMessage.setChatId(chatId)
                     .setText("DEFAULT por null");
         } else {
-            if (messageInput.equals("/start") || firstMessage==false){
+            if (messageInput.equals("Inicio") || firstMessage==false){
                 firstMessage = false;
-                setModulesMessages(update,sendMessage,messageTextReceived);
+//                setModulesMessages(update,sendMessage,messageTextReceived);
                 try {
                     switch(messageInput) {
-                        case "inicio":
-                            sendMessage.setChatId(chatId)
-                                    .setText(messageBl.inicioMensaje(sendMessage,sendPhoto,update));
+                        case "Inicio":
+                            messageBl.startConversation(update, user,sendMessage,sendPhoto);
                             break;
-                        case "/start":
-                            imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
-                            sendPhoto.setChatId(chatId)
-                                    .setPhoto(imageFile);
-                            sendMessage.setChatId(chatId)
-                                    .setText("Que gusto verte denuevo!\nSeleciona una opcion por favor");
-                            row.add("Registrar Contacto");
-                            row.add("Buscar");
-                            keyboard.add(row);
-                            keyboardMarkup.setKeyboard(keyboard);
-                            sendMessage.setReplyMarkup(keyboardMarkup);
-                            break;
-
                         case "Registrar Contacto":
-                            messageBl.setEntra_a_registro_docente(true);
+
                             imageFile = "https://i2.wp.com/mundialdecruceros.com/wp-content/uploads/2019/07/Contacto.png?fit=200%2C238&ssl=1";
                             sendMessage.setChatId(chatId)
                                     .setText("Vamos a registrar un nuevo contacto \nIngresa el nombre por favor");
                             sendPhoto.setChatId(chatId)
                                     .setPhoto(imageFile);
+                            messageBl.registerConact(update, user,sendMessage,sendPhoto);
                             break;
                         case "Buscar":
 //                            User user1 = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
@@ -128,7 +115,11 @@ public class BotBl {
             }
             else {
                 sendMessage.setChatId(chatId)
-                        .setText("Hola, para empezar el bot por favor escribe /start");
+                        .setText("Hola, para empezar el bot por favor escribe Inicio");
+                row.add("Inicio");
+                keyboard.add(row);
+                keyboardMarkup.setKeyboard(keyboard);
+                sendMessage.setReplyMarkup(keyboardMarkup);
             }
         }
 
@@ -161,12 +152,12 @@ public class BotBl {
     }
 
 
-    private void setModulesMessages(Update update,SendMessage sendMessage,String messageTextReceived){
-        if(messageBl.isEntra_a_registro_docente()){
-            sendMessage.setText(messageBl.entraRegistroDocente(sendMessage,messageTextReceived));
-
-        }
-    }
+//    private void setModulesMessages(Update update,SendMessage sendMessage,String messageTextReceived){
+//        if(messageBl.isEntra_a_registro_docente()){
+//            sendMessage.setText(messageBl.entraRegistroDocente(sendMessage,messageTextReceived));
+//
+//        }
+//    }
 
 
 
