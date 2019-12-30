@@ -30,7 +30,9 @@ public class BotBl {
     private PhoneRepository phoneRepository;
     private ChatRepository chatRepository;
     private ContactRepository contactRepository;
-    public  Boolean firstMessage = true;
+    public Boolean firstMessage = true;
+    public Boolean registerFlag = false;
+    public int registerCounter =0;
     MessageBl messageBl;
 
     @Autowired
@@ -65,23 +67,28 @@ public class BotBl {
         if (lastMessage == null) {
             sendMessage.setChatId(chatId)
                     .setText("DEFAULT por null");
-        } else {
-            if (messageInput.equals("Inicio") || firstMessage==false){
+        }
+        else {
+            if (registerFlag = true && firstMessage==false){
+                LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
+                messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
+                registerCounter++;
+            }
+            else if ( (messageInput.equals("Inicio") || firstMessage==false) && registerFlag == false){
                 firstMessage = false;
-//                setModulesMessages(update,sendMessage,messageTextReceived);
                 try {
                     switch(messageInput) {
                         case "Inicio":
                             messageBl.startConversation(update, user,sendMessage,sendPhoto);
                             break;
                         case "Registrar Contacto":
-
+                            registerFlag = true;
                             imageFile = "https://i2.wp.com/mundialdecruceros.com/wp-content/uploads/2019/07/Contacto.png?fit=200%2C238&ssl=1";
                             sendMessage.setChatId(chatId)
                                     .setText("Vamos a registrar un nuevo contacto \nIngresa el nombre por favor");
                             sendPhoto.setChatId(chatId)
                                     .setPhoto(imageFile);
-                            messageBl.registerConact(update, user,sendMessage,sendPhoto);
+                            messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
                             break;
                         case "Buscar":
 //                            User user1 = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
