@@ -11,6 +11,10 @@ import com.example.AgendaSoftware.dto.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -18,10 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MessageBl {
@@ -38,6 +39,7 @@ public class MessageBl {
     private PhoneRepository phoneRepository;
     private PhoneBl phoneBl;
     private ContactBl contactBl;
+    private Contact contact;
 
     @Autowired
     public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository){
@@ -69,37 +71,84 @@ public class MessageBl {
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
+    /*
+            imageFile = "https://i2.wp.com/mundialdecruceros.com/wp-content/uploads/2019/07/Contacto.png?fit=200%2C238&ssl=1";
+        sendMessage.setChatId(chatId)
+                .setText("Vamos a registrar un nuevo contacto \nIngresa el nombre por favor");
+        sendPhoto.setChatId(chatId)
+                .setPhoto(imageFile);
+     */
 
 
-    public static void registerConact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+    public void registerConact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
+
         String responce= null;
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
+        if(registerCounter==10){
+            registUserList.add(update.getMessage().getText());
+            Date dateBornContact = new Date(Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(7)));
+            LOGGER.info("0"+registUserList.get(0));
+            LOGGER.info("1"+registUserList.get(1));
+            LOGGER.info("2"+registUserList.get(2));
+            LOGGER.info("3"+registUserList.get(3));
+            LOGGER.info("4"+registUserList.get(4));
+            LOGGER.info("5"+registUserList.get(5));
+            LOGGER.info("6"+registUserList.get(6));
+            LOGGER.info("7"+registUserList.get(7));
+            LOGGER.info("8"+registUserList.get(8));
+            LOGGER.info("9"+registUserList.get(9));
+            LOGGER.info("10"+registUserList.get(10));
+            LOGGER.info("Fecha Nacimiento"+dateBornContact);
+            Contact contact = new Contact();
+            contact.setIdUserContact(user);
+            contact.setFirstName(registUserList.get(1));
+            contact.setSecondName(registUserList.get(2));
+            contact.setFirstLastName(registUserList.get(3));
+            contact.setSecondLastName(registUserList.get(4));
+            contact.setMail(registUserList.get(5));
+            contact.setDateBorn(dateBornContact);
+            contact.setImage(registUserList.get(10));
+            contact.setStatus(Status.ACTIVE.getStatus());
+            contactRepository.save(contact);
+
+            Phone phone = new Phone();
+            phone.setNumberPhone(registUserList.get(6));
+            phone.setIdContactPhone(contact);
+            phone.setStatus(Status.ACTIVE.getStatus());
+
+            System.out.println(phone.getNumberPhone());
+            System.out.println(phone.getIdContactPhone());
+            System.out.println(phone.getStatus());
+
+            phoneRepository.save(phone);
+            registerFlag = false;
+
+            sendMessage.setText("Registro Completado");
+            row.add("Menú Principal");
+            keyboard.add(row);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+        }
+        else{
         sendMessage.setChatId(chatId);
-        int count = 8;
-        while(count<=8){
-            responce = messageSaveContact(count);
+            responce = messageSaveContact(registerCounter);
             sendMessage.setChatId(chatId)
                     .setText(responce);
             row.add("Siguiente");
             keyboard.add(row);
             keyboardMarkup.setKeyboard(keyboard);
             sendMessage.setReplyMarkup(keyboardMarkup);
-
-            registUserList.add(update.getMessage().getText());
-            count++;
+            if(registerCounter != 0){
+                registUserList.add(update.getMessage().getText());
+            }
+            else {
+                registUserList.add("Iniciando Registro");
+            }
         }
-
-//        sendPhoto.setChatId(chatId)
-//                .setPhoto(imageFile);
-//        sendMessage.setChatId(chatId)
-//                .setText("Registro completado");
-
-
     }
-
 
     public static int getNumero_de_pregunta() {
         return numero_de_pregunta;
@@ -172,10 +221,18 @@ public class MessageBl {
                 responces="Ingese numero telefónico";
                 break;
             case 6:
-                LOGGER.info("Pedir nacimiento");
-                responces="Ingese fecha de nacimiento";
+                LOGGER.info("Pedir dia de nacimiento");
+                responces="Ingese dia de nacimiento";
                 break;
             case 7:
+                LOGGER.info("Pedir mes de nacimiento");
+                responces="Ingese mes de nacimiento";
+                break;
+            case 8:
+                LOGGER.info("Pedir año de nacimiento");
+                responces="Ingese año de nacimiento";
+                break;
+            case 9:
                 LOGGER.info("Pedir imagen");
                 responces="Ingese imagen para el contacto";
                 break;
