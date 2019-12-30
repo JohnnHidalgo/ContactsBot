@@ -42,43 +42,32 @@ public class MessageBl {
     private Contact contact;
 
     @Autowired
-    public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository){
+    public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository, PhoneRepository phoneRepository){
         this.phoneBl = phoneBl;
         this.contactBl = contactBl;
         this.contactRepository = contactRepository;
         this.userRepository = userRepository;
+        this.phoneRepository = phoneRepository;
     }
 
     //sendMessage,sendPhoto,update
     public static void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
-
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
         sendMessage.setChatId(chatId);
-
         sendPhoto.setChatId(chatId)
                 .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
                 .setText("Que gusto verte denuevo!\nSeleciona una opcion por favor");
-
         row.add("Registrar Contacto");
         row.add("Buscar");
         keyboard.add(row);
         keyboardMarkup.setKeyboard(keyboard);
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
-
-    /*
-            imageFile = "https://i2.wp.com/mundialdecruceros.com/wp-content/uploads/2019/07/Contacto.png?fit=200%2C238&ssl=1";
-        sendMessage.setChatId(chatId)
-                .setText("Vamos a registrar un nuevo contacto \nIngresa el nombre por favor");
-        sendPhoto.setChatId(chatId)
-                .setPhoto(imageFile);
-     */
-
 
     public void registerConact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
 
@@ -118,10 +107,6 @@ public class MessageBl {
             phone.setNumberPhone(registUserList.get(6));
             phone.setIdContactPhone(contact);
             phone.setStatus(Status.ACTIVE.getStatus());
-
-            System.out.println(phone.getNumberPhone());
-            System.out.println(phone.getIdContactPhone());
-            System.out.println(phone.getStatus());
 
             phoneRepository.save(phone);
             registerFlag = false;
@@ -192,13 +177,12 @@ public class MessageBl {
         return contactList;
     }
 
-
     public static String messageSaveContact(int qu) {
         String responces=new String();
         switch (qu){
             case 0:
                 LOGGER.info("Pedir de Primer Nombre");
-                responces="Ingrese Primer Nombre";
+                responces="Vamos a registrar un nuevo contacto. \nSi no tiene alguno de los datos solicitados puede presionar el boton de siguiente. \nIngrese Primer Nombre";
                 break;
             case 1:
                 LOGGER.info("Pedir de Segundo Nombre");
