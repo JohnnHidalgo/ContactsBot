@@ -10,6 +10,7 @@ import com.example.AgendaSoftware.dto.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -24,18 +25,13 @@ import java.util.*;
 public class MessageBl {
 
     private static final Logger LOGGER= LoggerFactory.getLogger(MessageBl.class);
-    private static int numero_de_pregunta=0;
-    private static boolean registrosllenos=false;
-    private static boolean entra_a_registro_docente=false;
     private static List<String> registUserList= new ArrayList<>();
 
-    /*******/
     private ContactRepository contactRepository;
     private UserRepository userRepository;
     private PhoneRepository phoneRepository;
     private PhoneBl phoneBl;
     private ContactBl contactBl;
-    private Contact contact;
 
     @Autowired
     public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository, PhoneRepository phoneRepository){
@@ -46,7 +42,7 @@ public class MessageBl {
         this.phoneRepository = phoneRepository;
     }
 
-    public static void principalMenu(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+    public void principalMenu(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -65,24 +61,66 @@ public class MessageBl {
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
-    public static void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+
+    /*
+    List<Contact> contactList = new ArrayList<>();
+         contactList = messageBl.listaDeContactpos(sendMessage,messageTextReceived);
+
+         LOGGER.info(contactList.get(0).getFirstName());
+
+         contactList.size();
+         sendMessage.setChatId(chatId)
+                 .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail()+"\n"+
+                         contactList.get(1).getFirstName()+"\n"+ contactList.get(1).getSecondName()+"\n"+contactList.get(1).getMail());
+         break;
+     */
+
+    public List<Contact> listaDeContactpos(SendMessage sendMessage){
+        User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
+        List<Contact> contactList = contactRepository.findAll();
+
+        return contactList;
+    }
+
+    public void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto) {
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+
+        LOGGER.info("USER"+user.getIdUser().toString());//id usuario
+        LOGGER.info("USER"+user.getIdUserbot());
+        LOGGER.info("USER"+user.getName());
+        LOGGER.info("USER"+user.getLastName());
+        LOGGER.info("USER"+user.getTxHost());
+        LOGGER.info("USER"+user.getTxDate());
+
+        List<Contact> userContactList = new ArrayList<>();
+        int userIdMessage= user.getIdUser();
+        String responceContacts = "";
+        List<Contact> contactList = new ArrayList<>();
+        contactList = listaDeContactpos(sendMessage);
+        for (int i=0; i<contactList.size();i++){
+            if(userIdMessage == contactList.get(i).getIdUserContact().getIdUser() && contactList.get(i).getStatus()==1){
+                userContactList.add(contactList.get(i));
+                responceContacts = responceContacts +contactList.get(i).getFirstName()+" "+contactList.get(i).getFirstLastName()+" "+contactList.get(i).getMail()+"\n";
+            }
+        }
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Enlistar\n\n"+responceContacts);
+    }
+
+    public void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         sendMessage.setChatId(chatId)
                 .setText("Estamos en Buscar");
     }
 
-    public static void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Estamos en Enlistar");
-    }
-    public static void infoApp(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+    public void infoApp(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         sendMessage.setChatId(chatId)
                 .setText("Estamos en Información");
     }
 
-    public static void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+    public void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -105,7 +143,7 @@ public class MessageBl {
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
-    public static void startRegisterContact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
+    public void startRegisterContact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -187,6 +225,7 @@ public class MessageBl {
             contact.setDateBorn(dateBornContact);
             contact.setImage(registUserList.get(10));
             contact.setStatus(Status.ACTIVE.getStatus());
+
             contactRepository.save(contact);
             Phone phone = new Phone();
             phone.setNumberPhone(registUserList.get(6));
@@ -205,12 +244,6 @@ public class MessageBl {
 
             LOGGER.info("RegistroCompleto B");
         }
-    }
-
-    public List<Contact> listaDeContactos(SendMessage sendMessage,String messageTextReceived){
-        User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
-        List<Contact> contactList = contactRepository.findAll();
-        return contactList;
     }
 
     public static String messageSaveContact(int qu) {
