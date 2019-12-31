@@ -3,7 +3,6 @@ package com.example.AgendaSoftware.bl;
 import com.example.AgendaSoftware.dao.ContactRepository;
 import com.example.AgendaSoftware.dao.PhoneRepository;
 import com.example.AgendaSoftware.dao.UserRepository;
-import com.example.AgendaSoftware.domain.Chat;
 import com.example.AgendaSoftware.domain.Contact;
 import com.example.AgendaSoftware.domain.Phone;
 import com.example.AgendaSoftware.domain.User;
@@ -11,18 +10,12 @@ import com.example.AgendaSoftware.dto.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.*;
@@ -79,24 +72,19 @@ public class MessageBl {
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
         keyboardMarkup.setResizeKeyboard(true);
-
-        if(registerCounter<11){
+        String photoData = null;
+        if(registerCounter<=10){
             sendMessage.setChatId(chatId);
-            responce = messageSaveContact(registerCounter);
-            sendMessage.setChatId(chatId)
-                    .setText(responce);
-
-//            row.add("Siguiente");
-//            keyboard.add(row);
-
-            keyboardMarkup.setKeyboard(keywordSaveContact(registerCounter));
-
-            sendMessage.setReplyMarkup(keyboardMarkup);
+                responce = messageSaveContact(registerCounter);
+                sendMessage.setChatId(chatId)
+                        .setText(responce);
+                keyboardMarkup.setKeyboard(keywordSaveContact(registerCounter));
+                sendMessage.setReplyMarkup(keyboardMarkup);
 
             if(registerCounter != 0){
                 if(update.getMessage().hasPhoto()){
                     List<PhotoSize> photos = update.getMessage().getPhoto();
-                    String photoData = photos.stream()
+                    photoData = photos.stream()
                             .sorted(Comparator.comparing(PhotoSize::getFileSize).reversed())
                             .findFirst()
                             .orElse(null).getFileId();
@@ -111,9 +99,11 @@ public class MessageBl {
             }
         }
         else{
+
+//            registUserList.add(photoData);
             //Entra a registro del contacto con los datos ingresados
             registUserList.add(update.getMessage().getText());
-            Date dateBornContact = new Date(Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(7)));
+            Date dateBornContact = new Date(Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(8)), Integer.parseInt(registUserList.get(9)));
             LOGGER.info("0"+registUserList.get(0));
             LOGGER.info("1"+registUserList.get(1));
             LOGGER.info("2"+registUserList.get(2));
@@ -144,17 +134,19 @@ public class MessageBl {
             phoneRepository.save(phone);
             LOGGER.info("RegistroCompleto A");
             registerFlag = false;
+
+            sendMessage.setChatId(chatId);
             sendMessage.setText("Registro Completado");
             row.add("Menú Principal");
             keyboard.add(row);
             keyboardMarkup.setKeyboard(keyboard);
-
             sendMessage.setReplyMarkup(keyboardMarkup);
+
             LOGGER.info("RegistroCompleto B");
         }
     }
 
-    public List<Contact> listaDeContactpos(SendMessage sendMessage,String messageTextReceived){
+    public List<Contact> listaDeContactos(SendMessage sendMessage,String messageTextReceived){
         User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
         List<Contact> contactList = contactRepository.findAll();
         return contactList;
@@ -165,7 +157,7 @@ public class MessageBl {
         switch (qu){
             case 0:
                 LOGGER.info("[Message] Pedir de Primer Nombre");
-                responces="Vamos a registrar un nuevo contacto. \nSi no tiene alguno de los datos solicitados puede presionar el boton de siguiente. \nIngrese Primer Nombre";
+                responces="Vamos a registrar un nuevo contacto. \n\nSi no tiene alguno de los datos solicitados puede presionar el boton de siguiente. \n\nIngrese Primer Nombre";
                 break;
             case 1:
                 LOGGER.info("[Message] Pedir de Segundo Nombre");
@@ -206,7 +198,6 @@ public class MessageBl {
         }
         return responces;
     }
-
 
     public static List<KeyboardRow> keywordSaveContact(int qu) {
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -315,6 +306,11 @@ public class MessageBl {
             case 9:
                 LOGGER.info("[Keyword]Pedir imagen");
                 row.add("Siguiente");
+                keyboard.add(row);
+                break;
+            case 10:
+                LOGGER.info("[Keyword]Pedir imagen");
+                row.add("Guardar");
                 keyboard.add(row);
                 break;
         }

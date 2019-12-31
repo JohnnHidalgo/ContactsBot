@@ -23,7 +23,7 @@ public class MainBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         System.out.println(update);
         update.getMessage().getFrom().getId();
-        if (update.hasMessage() && update.getMessage().hasText() || update.getMessage().hasPhoto()) {
+        if (update.hasMessage() && update.getMessage().hasText()) {
             SendMessage message=new SendMessage();
             SendPhoto photo = new SendPhoto();
 

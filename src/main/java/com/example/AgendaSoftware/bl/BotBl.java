@@ -19,7 +19,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BotBl {
@@ -99,7 +98,7 @@ public class BotBl {
 //                            List<Contact> contactList = contactRepository.findAllByIdUserContact(user1);
 
                             List<Contact> contactList = new ArrayList<>();
-                            contactList = messageBl.listaDeContactpos(sendMessage,messageTextReceived);
+                            contactList = messageBl.listaDeContactos(sendMessage,messageTextReceived);
 
                             LOGGER.info(contactList.get(0).getFirstName());
 
@@ -161,16 +160,5 @@ public class BotBl {
         }
         return userBotBl;
     }
-
-
-//    private void setModulesMessages(Update update,SendMessage sendMessage,String messageTextReceived){
-//        if(messageBl.isEntra_a_registro_docente()){
-//            sendMessage.setText(messageBl.entraRegistroDocente(sendMessage,messageTextReceived));
-//
-//        }
-//    }
-
-
-
 
 }
