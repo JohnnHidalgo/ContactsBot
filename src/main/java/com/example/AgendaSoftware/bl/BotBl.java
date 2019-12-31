@@ -68,17 +68,23 @@ public class BotBl {
                     .setText("DEFAULT por null");
         }
         else {
-            if (registerFlag = true && firstMessage==false&& !update.getMessage().hasPhoto()){
-                LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
-                messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
-                registerCounter++;
-            }else if(registerFlag = true && firstMessage==false && update.getMessage().hasPhoto()){
-                LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
-                messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
-                registerCounter++;
-            }
 
-            else if ( (messageInput.equals("Inicio") || firstMessage==false) && registerFlag == false){
+            if(messageInput.equals("Menú Principal") || messageInput.equals("Cancelar")){
+                registerFlag=false;
+                messageBl.principalMenu(update, user,sendMessage,sendPhoto);
+            }
+            if(registerFlag == true){
+                if (registerFlag = true && firstMessage==false&& !update.getMessage().hasPhoto()){
+                    LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
+                    messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
+                    registerCounter++;
+                }else if(registerFlag = true && firstMessage==false && update.getMessage().hasPhoto()){
+                    LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
+                    messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
+                    registerCounter++;
+                }
+            }
+            else if (messageInput.equals("Inicio") || firstMessage==false){
                 firstMessage = false;
                 try {
                     switch(messageInput) {
@@ -86,27 +92,37 @@ public class BotBl {
                             messageBl.startConversation(update, user,sendMessage,sendPhoto);
                             break;
                         case "Registrar Contacto":
+                            LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
                             registerFlag = true;
-                            messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
+                            messageBl.startRegisterContact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
                             break;
-//                        case "Menú Principal":
-//
-//                            break;
-
+                        case "Menú Principal":
+                            messageBl.principalMenu(update, user,sendMessage,sendPhoto);
+                            break;
+                        case "Enlistar":
+                            messageBl.listContact(update, user,sendMessage,sendPhoto);
+                            break;
                         case "Buscar":
+                            messageBl.findContact(update, user,sendMessage,sendPhoto);
+                            break;
+                        case "Información":
+                            messageBl.infoApp(update, user,sendMessage,sendPhoto);
+                            break;
+//                        case "Buscar":
+//                            messageBl.findContact(update, user,sendMessage,sendPhoto);
 //                            User user1 = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
 //                            List<Contact> contactList = contactRepository.findAllByIdUserContact(user1);
 
-                            List<Contact> contactList = new ArrayList<>();
-                            contactList = messageBl.listaDeContactos(sendMessage,messageTextReceived);
-
-                            LOGGER.info(contactList.get(0).getFirstName());
-
-                            contactList.size();
-                            sendMessage.setChatId(chatId)
-                                    .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail()+"\n"+
-                                            contactList.get(1).getFirstName()+"\n"+ contactList.get(1).getSecondName()+"\n"+contactList.get(1).getMail());
-                            break;
+//                            List<Contact> contactList = new ArrayList<>();
+//                            contactList = messageBl.listaDeContactos(sendMessage,messageTextReceived);
+//
+//                            LOGGER.info(contactList.get(0).getFirstName());
+//
+//                            contactList.size();
+//                            sendMessage.setChatId(chatId)
+//                                    .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail()+"\n"+
+//                                            contactList.get(1).getFirstName()+"\n"+ contactList.get(1).getSecondName()+"\n"+contactList.get(1).getMail());
+//                            break;
 
 //                        default:
 //                            sendMessage.setChatId(chatId)

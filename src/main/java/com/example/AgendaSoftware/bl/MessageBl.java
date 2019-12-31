@@ -46,26 +46,97 @@ public class MessageBl {
         this.phoneRepository = phoneRepository;
     }
 
+    public static void principalMenu(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        KeyboardRow rowOne = new KeyboardRow();
+        sendPhoto.setChatId(chatId)
+                .setPhoto(imageFile);
+        sendMessage.setChatId(chatId)
+                .setText("Menú");
+        row.add("Registrar Contacto");
+        row.add("Enlistar");
+        rowOne.add("Buscar");
+        rowOne.add("Información");
+
+        keyboard.add(row);
+        keyboard.add(rowOne);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    public static void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
+        sendPhoto.setChatId(chatId)
+                .setPhoto(imageFile);
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Buscar");
+    }
+
+    public static void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
+        sendPhoto.setChatId(chatId)
+                .setPhoto(imageFile);
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Enlistar");
+    }
+    public static void infoApp(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
+        sendPhoto.setChatId(chatId)
+                .setPhoto(imageFile);
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Información");
+    }
+
     public static void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-        sendMessage.setChatId(chatId);
+        KeyboardRow rowOne = new KeyboardRow();
+
         sendPhoto.setChatId(chatId)
                 .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
                 .setText("Que gusto verte denuevo!\nSeleciona una opcion por favor");
+
         row.add("Registrar Contacto");
-        row.add("Buscar");
+        row.add("Enlistar");
+        rowOne.add("Buscar");
+        rowOne.add("Información");
+
+        keyboard.add(row);
+        keyboard.add(rowOne);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    public static void startRegisterContact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
+        long chatId = update.getMessage().getChatId();
+        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+
+        sendPhoto.setChatId(chatId)
+                .setPhoto(imageFile);
+        sendMessage.setChatId(chatId)
+                .setText("Vamos a registrar un nuevo contacto. \n\nSi no tiene alguno de los datos solicitados puede presionar el boton de siguiente.");
+
+        row.add("Empezar");
         keyboard.add(row);
         keyboardMarkup.setKeyboard(keyboard);
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
     public void registerConact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
-
         String responce= null;
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -99,11 +170,9 @@ public class MessageBl {
             }
         }
         else{
-
-//            registUserList.add(photoData);
-            //Entra a registro del contacto con los datos ingresados
             registUserList.add(update.getMessage().getText());
-            Date dateBornContact = new Date(Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(8)), Integer.parseInt(registUserList.get(9)));
+
+
             LOGGER.info("0"+registUserList.get(0));
             LOGGER.info("1"+registUserList.get(1));
             LOGGER.info("2"+registUserList.get(2));
@@ -115,6 +184,15 @@ public class MessageBl {
             LOGGER.info("8"+registUserList.get(8));
             LOGGER.info("9"+registUserList.get(9));
             LOGGER.info("10"+registUserList.get(10));
+            LOGGER.info("11"+registUserList.get(11));
+
+
+            Calendar calendarDateBorn = Calendar.getInstance();
+            calendarDateBorn.set(Calendar.YEAR, Integer.parseInt(registUserList.get(9)));
+            calendarDateBorn.set(Calendar.MONTH, Integer.parseInt(registUserList.get(8))-1);
+            calendarDateBorn.set(Calendar.DAY_OF_MONTH, Integer.parseInt(registUserList.get(7)));
+            Date dateBornContact = calendarDateBorn.getTime();
+
             LOGGER.info("Fecha Nacimiento"+dateBornContact);
             Contact contact = new Contact();
             contact.setIdUserContact(user);
@@ -157,7 +235,7 @@ public class MessageBl {
         switch (qu){
             case 0:
                 LOGGER.info("[Message] Pedir de Primer Nombre");
-                responces="Vamos a registrar un nuevo contacto. \n\nSi no tiene alguno de los datos solicitados puede presionar el boton de siguiente. \n\nIngrese Primer Nombre";
+                responces="Ingrese Primer Nombre";
                 break;
             case 1:
                 LOGGER.info("[Message] Pedir de Segundo Nombre");
@@ -211,35 +289,42 @@ public class MessageBl {
             case 0:
                 LOGGER.info("[Keyword]Pedir de Primer Nombre");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 keyboard.add(row);
                 break;
             case 1:
                 LOGGER.info("[Keyword]Pedir de Segundo Nombre");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 keyboard.add(row);
                 break;
             case 2:
                 LOGGER.info("[Keyword]Pedir primer apellido");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 keyboard.add(row);
                 break;
             case 3:
                 LOGGER.info("[Keyword]Pedir segundo Apellido");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 keyboard.add(row);
                 break;
             case 4:
                 LOGGER.info("[Keyword]Pedir correo");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 keyboard.add(row);
                 break;
             case 5:
                 LOGGER.info("[Keyword]Pedir numero");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 break;
             case 6:
                 LOGGER.info("[Keyword]Pedir dia de nacimiento");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 rowOne.add("1");
                 rowOne.add("2");
                 rowOne.add("3");
@@ -281,6 +366,7 @@ public class MessageBl {
             case 7:
                 LOGGER.info("[Keyword]Pedir mes de nacimiento");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 rowOne.add("1");
                 rowOne.add("2");
                 rowOne.add("3");
@@ -301,16 +387,13 @@ public class MessageBl {
             case 8:
                 LOGGER.info("[Keyword]Pedir año de nacimiento");
                 row.add("Siguiente");
+                row.add("Cancelar");
                 keyboard.add(row);
                 break;
             case 9:
                 LOGGER.info("[Keyword]Pedir imagen");
-                row.add("Siguiente");
-                keyboard.add(row);
-                break;
-            case 10:
-                LOGGER.info("[Keyword]Pedir imagen");
                 row.add("Guardar");
+                row.add("Cancelar");
                 keyboard.add(row);
                 break;
         }
