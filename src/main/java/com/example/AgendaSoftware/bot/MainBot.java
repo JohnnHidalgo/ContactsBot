@@ -23,7 +23,7 @@ public class MainBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         System.out.println(update);
         update.getMessage().getFrom().getId();
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage() && update.getMessage().hasText() || update.getMessage().hasPhoto()) {
             SendMessage message=new SendMessage();
             SendPhoto photo = new SendPhoto();
 
@@ -46,6 +46,30 @@ public class MainBot extends TelegramLongPollingBot {
                  System.out.print("NullPointerException caught");
              }
         }
+
+        if (update.hasMessage() && update.getMessage().hasPhoto()) {
+            SendMessage message=new SendMessage();
+            SendPhoto photo = new SendPhoto();
+
+            botBl.processUpdateMesage(update,message,photo);
+            try {
+                if(message == null){
+                    message.setText("No entiendo lo que me quieres decir");
+                    this.execute(message);
+                }
+                else if (message != null && photo.getPhoto() != null){
+                    this.execute(photo);
+                }
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+            catch(NullPointerException e )
+            {
+                System.out.print("NullPointerException caught");
+            }
+        }
+
+
     }
 
     @Override

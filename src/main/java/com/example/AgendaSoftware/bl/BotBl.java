@@ -69,11 +69,16 @@ public class BotBl {
                     .setText("DEFAULT por null");
         }
         else {
-            if (registerFlag = true && firstMessage==false){
+            if (registerFlag = true && firstMessage==false&& !update.getMessage().hasPhoto()){
+                LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
+                messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
+                registerCounter++;
+            }else if(registerFlag = true && firstMessage==false && update.getMessage().hasPhoto()){
                 LOGGER.info(("Contador [RegisterCounterValue]"+registerCounter));
                 messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
                 registerCounter++;
             }
+
             else if ( (messageInput.equals("Inicio") || firstMessage==false) && registerFlag == false){
                 firstMessage = false;
                 try {
@@ -85,9 +90,10 @@ public class BotBl {
                             registerFlag = true;
                             messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
                             break;
-                        case "Menú Principal":
+//                        case "Menú Principal":
+//
+//                            break;
 
-                            break;
                         case "Buscar":
 //                            User user1 = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
 //                            List<Contact> contactList = contactRepository.findAllByIdUserContact(user1);
@@ -130,7 +136,7 @@ public class BotBl {
 
         Chat chat = new Chat();
         chat.setIdUserChat(user);
-        chat.setInMessage(update.getMessage().getText());
+        chat.setInMessage(update.getMessage().hasPhoto()?"User send photo":update.getMessage().getText());
         chat.setOutMessage("outMessage");
         chat.setDateMessage(new Date());
         chat.setTxDate(new Date());

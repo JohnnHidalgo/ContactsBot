@@ -18,8 +18,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.*;
@@ -50,7 +53,6 @@ public class MessageBl {
         this.phoneRepository = phoneRepository;
     }
 
-    //sendMessage,sendPhoto,update
     public static void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
@@ -76,7 +78,40 @@ public class MessageBl {
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-        if(registerCounter==10){
+        keyboardMarkup.setResizeKeyboard(true);
+
+        if(registerCounter<11){
+            sendMessage.setChatId(chatId);
+            responce = messageSaveContact(registerCounter);
+            sendMessage.setChatId(chatId)
+                    .setText(responce);
+
+//            row.add("Siguiente");
+//            keyboard.add(row);
+
+            keyboardMarkup.setKeyboard(keywordSaveContact(registerCounter));
+
+            sendMessage.setReplyMarkup(keyboardMarkup);
+
+            if(registerCounter != 0){
+                if(update.getMessage().hasPhoto()){
+                    List<PhotoSize> photos = update.getMessage().getPhoto();
+                    String photoData = photos.stream()
+                            .sorted(Comparator.comparing(PhotoSize::getFileSize).reversed())
+                            .findFirst()
+                            .orElse(null).getFileId();
+                    registUserList.add(photoData);
+                }
+                else {
+                    registUserList.add(update.getMessage().getText());
+                }
+            }
+            else {
+                registUserList.add("Iniciando Registro");
+            }
+        }
+        else{
+            //Entra a registro del contacto con los datos ingresados
             registUserList.add(update.getMessage().getText());
             Date dateBornContact = new Date(Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(7)), Integer.parseInt(registUserList.get(7)));
             LOGGER.info("0"+registUserList.get(0));
@@ -102,78 +137,26 @@ public class MessageBl {
             contact.setImage(registUserList.get(10));
             contact.setStatus(Status.ACTIVE.getStatus());
             contactRepository.save(contact);
-
             Phone phone = new Phone();
             phone.setNumberPhone(registUserList.get(6));
             phone.setIdContactPhone(contact);
             phone.setStatus(Status.ACTIVE.getStatus());
-
             phoneRepository.save(phone);
+            LOGGER.info("RegistroCompleto A");
             registerFlag = false;
-
             sendMessage.setText("Registro Completado");
             row.add("Menú Principal");
             keyboard.add(row);
             keyboardMarkup.setKeyboard(keyboard);
+
             sendMessage.setReplyMarkup(keyboardMarkup);
-        }
-        else{
-        sendMessage.setChatId(chatId);
-            responce = messageSaveContact(registerCounter);
-            sendMessage.setChatId(chatId)
-                    .setText(responce);
-            row.add("Siguiente");
-            keyboard.add(row);
-            keyboardMarkup.setKeyboard(keyboard);
-            sendMessage.setReplyMarkup(keyboardMarkup);
-            if(registerCounter != 0){
-                registUserList.add(update.getMessage().getText());
-            }
-            else {
-                registUserList.add("Iniciando Registro");
-            }
+            LOGGER.info("RegistroCompleto B");
         }
     }
 
-    public static int getNumero_de_pregunta() {
-        return numero_de_pregunta;
-    }
-
-    public static void setNumero_de_pregunta(int numero_de_pregunta) {
-        MessageBl.numero_de_pregunta = numero_de_pregunta;
-    }
-
-//    public String entraRegistroDocente(SendMessage sendMessage,String messageTextReceived){
-//        System.out.println("Entra a el registro docente oficial");
-//        LOGGER.info("Entra a el registro docente oficial");
-//        String mensaje="";
-//        if(registrollenadosList.size()<8)
-//        {
-//            LOGGER.info("Entra al registros no llenos");
-//            if(getNumero_de_pregunta()<7){
-//                mensaje = messageSaveContact(4);
-//            }
-//            setNumero_de_pregunta(getNumero_de_pregunta()+1) ;//
-//            registrollenadosList.add(messageTextReceived);
-//        }
-//        if (registrollenadosList.size()==7) {
-//            LOGGER.info("Ingresa a registros llenos");
-//            mensaje = guardarListaRegistros(registrollenadosList, sendMessage);
-//            registrosllenos = false;
-//            registrollenadosList.clear();
-//            entra_a_registro_docente = false;
-//            setNumero_de_pregunta(0) ;//
-//        }
-//        System.out.println(mensaje);
-//        sendMessage.setText(mensaje);
-//        return mensaje;
-//    }
     public List<Contact> listaDeContactpos(SendMessage sendMessage,String messageTextReceived){
         User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
-
-
         List<Contact> contactList = contactRepository.findAll();
-
         return contactList;
     }
 
@@ -181,86 +164,161 @@ public class MessageBl {
         String responces=new String();
         switch (qu){
             case 0:
-                LOGGER.info("Pedir de Primer Nombre");
+                LOGGER.info("[Message] Pedir de Primer Nombre");
                 responces="Vamos a registrar un nuevo contacto. \nSi no tiene alguno de los datos solicitados puede presionar el boton de siguiente. \nIngrese Primer Nombre";
                 break;
             case 1:
-                LOGGER.info("Pedir de Segundo Nombre");
+                LOGGER.info("[Message] Pedir de Segundo Nombre");
                 responces="Ingrese Segundo Nombre";
                 break;
             case 2:
-                LOGGER.info("Pedir primer apellido");
+                LOGGER.info("[Message] Pedir primer apellido");
                 responces="Ingrese Primer Apellido";
                 break;
             case 3:
-                LOGGER.info("Pedir segundo Apellido");
-                responces="Ingese segundo Apellido";
+                LOGGER.info("[Message] Pedir segundo Apellido");
+                responces="Ingrese segundo Apellido";
                 break;
             case 4:
-                LOGGER.info("Pedir correo");
-                responces="Ingese email";
+                LOGGER.info("[Message] Pedir correo");
+                responces="Ingrese email";
                 break;
             case 5:
-                LOGGER.info("Pedir numero");
-                responces="Ingese numero telefónico";
+                LOGGER.info("[Message] Pedir numero");
+                responces="Ingrese numero telefónico";
                 break;
             case 6:
-                LOGGER.info("Pedir dia de nacimiento");
-                responces="Ingese dia de nacimiento";
+                LOGGER.info("[Message] Pedir dia de nacimiento");
+                responces="Ingrese dia de nacimiento";
                 break;
             case 7:
-                LOGGER.info("Pedir mes de nacimiento");
-                responces="Ingese mes de nacimiento";
+                LOGGER.info("[Message] Pedir mes de nacimiento");
+                responces="Ingrese mes de nacimiento";
                 break;
             case 8:
-                LOGGER.info("Pedir año de nacimiento");
-                responces="Ingese año de nacimiento";
+                LOGGER.info("[Message] Pedir año de nacimiento");
+                responces="Ingrese año de nacimiento";
                 break;
             case 9:
-                LOGGER.info("Pedir imagen");
-                responces="Ingese imagen para el contacto";
+                LOGGER.info("[Message] Pedir imagen");
+                responces="Ingrese imagen para el contacto";
                 break;
         }
         return responces;
     }
 
-    public  String guardarListaRegistros(List<String> listaderegistros, SendMessage sendMessage){
 
-        Contact contact =new Contact();
+    public static List<KeyboardRow> keywordSaveContact(int qu) {
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row= new KeyboardRow();
+        KeyboardRow rowOne= new KeyboardRow();
+        KeyboardRow rowTwo= new KeyboardRow();
+        KeyboardRow rowThree= new KeyboardRow();
+        KeyboardRow rowFour= new KeyboardRow();
 
+        switch (qu){
+            case 0:
+                LOGGER.info("[Keyword]Pedir de Primer Nombre");
+                row.add("Siguiente");
+                keyboard.add(row);
+                break;
+            case 1:
+                LOGGER.info("[Keyword]Pedir de Segundo Nombre");
+                row.add("Siguiente");
+                keyboard.add(row);
+                break;
+            case 2:
+                LOGGER.info("[Keyword]Pedir primer apellido");
+                row.add("Siguiente");
+                keyboard.add(row);
+                break;
+            case 3:
+                LOGGER.info("[Keyword]Pedir segundo Apellido");
+                row.add("Siguiente");
+                keyboard.add(row);
+                break;
+            case 4:
+                LOGGER.info("[Keyword]Pedir correo");
+                row.add("Siguiente");
+                keyboard.add(row);
+                break;
+            case 5:
+                LOGGER.info("[Keyword]Pedir numero");
+                row.add("Siguiente");
+                break;
+            case 6:
+                LOGGER.info("[Keyword]Pedir dia de nacimiento");
+                row.add("Siguiente");
+                rowOne.add("1");
+                rowOne.add("2");
+                rowOne.add("3");
+                rowOne.add("4");
+                rowOne.add("5");
+                rowOne.add("6");
+                rowOne.add("7");
+                rowOne.add("8");
+                rowTwo.add("9");
+                rowTwo.add("10");
+                rowTwo.add("11");
+                rowTwo.add("12");
+                rowTwo.add("13");
+                rowTwo.add("14");
+                rowTwo.add("15");
+                rowTwo.add("16");
+                rowThree.add("17");
+                rowThree.add("18");
+                rowThree.add("19");
+                rowThree.add("20");
+                rowThree.add("21");
+                rowThree.add("22");
+                rowThree.add("23");
+                rowThree.add("24");
+                rowFour.add("25");
+                rowFour.add("26");
+                rowFour.add("27");
+                rowFour.add("28");
+                rowFour.add("29");
+                rowFour.add("30");
+                rowFour.add("31");
+                keyboard.add(row);
+                keyboard.add(rowOne);
+                keyboard.add(rowTwo);
+                keyboard.add(rowThree);
+                keyboard.add(rowFour);
 
-        User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
-        System.out.println(userTest);
-        contact.setIdUserContact(userTest);
-        contact.setFirstName(listaderegistros.get(0));
-        contact.setSecondName(listaderegistros.get(1));
-        contact.setFirstLastName(listaderegistros.get(2));
-        contact.setSecondLastName(listaderegistros.get(3));
-        contact.setMail(listaderegistros.get(4));
-        contact.setDateBorn(new Date());
-        contact.setImage("No Image");
-        contact.setStatus(Status.ACTIVE.getStatus());
-        contactRepository.save(contact);
-
-
-//        Contact contactPhone = contactRepository.findById(contact.getIdUserContact());
-//        Phone phone = new Phone();
-//        phone.setIdContactPhone(contactPhone);
-//        phone.setNumberPhone(listaderegistros.get(5));
-//        phone.setStatus(Status.ACTIVE.getStatus());
-//        phoneRepository.save(phone);
-
-
-        return "¡Registro completado exitosamente¡";
-    }
-
-
-    public static boolean isEntra_a_registro_docente() {
-        return entra_a_registro_docente;
-    }
-
-    public static void setEntra_a_registro_docente(boolean entra_a_registro_docente) {
-        MessageBl.entra_a_registro_docente = entra_a_registro_docente;
+                break;
+            case 7:
+                LOGGER.info("[Keyword]Pedir mes de nacimiento");
+                row.add("Siguiente");
+                rowOne.add("1");
+                rowOne.add("2");
+                rowOne.add("3");
+                rowTwo.add("4");
+                rowTwo.add("5");
+                rowTwo.add("7");
+                rowThree.add("8");
+                rowThree.add("9");
+                rowThree.add("10");
+                rowFour.add("11");
+                rowFour.add("12");
+                keyboard.add(row);
+                keyboard.add(rowOne);
+                keyboard.add(rowTwo);
+                keyboard.add(rowThree);
+                keyboard.add(rowFour);
+                break;
+            case 8:
+                LOGGER.info("[Keyword]Pedir año de nacimiento");
+                row.add("Siguiente");
+                keyboard.add(row);
+                break;
+            case 9:
+                LOGGER.info("[Keyword]Pedir imagen");
+                row.add("Siguiente");
+                keyboard.add(row);
+                break;
+        }
+        return keyboard;
     }
 
 }
