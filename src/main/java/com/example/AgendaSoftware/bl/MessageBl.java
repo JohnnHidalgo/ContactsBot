@@ -48,13 +48,10 @@ public class MessageBl {
 
     public static void principalMenu(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
-        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
         KeyboardRow rowOne = new KeyboardRow();
-        sendPhoto.setChatId(chatId)
-                .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
                 .setText("Menú");
         row.add("Registrar Contacto");
@@ -70,26 +67,17 @@ public class MessageBl {
 
     public static void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
-        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
-        sendPhoto.setChatId(chatId)
-                .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
                 .setText("Estamos en Buscar");
     }
 
     public static void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
-        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
-        sendPhoto.setChatId(chatId)
-                .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
                 .setText("Estamos en Enlistar");
     }
     public static void infoApp(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
-        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
-        sendPhoto.setChatId(chatId)
-                .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
                 .setText("Estamos en Información");
     }
@@ -101,7 +89,6 @@ public class MessageBl {
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
         KeyboardRow rowOne = new KeyboardRow();
-
         sendPhoto.setChatId(chatId)
                 .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
@@ -120,13 +107,9 @@ public class MessageBl {
 
     public static void startRegisterContact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
         long chatId = update.getMessage().getChatId();
-        String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-
-        sendPhoto.setChatId(chatId)
-                .setPhoto(imageFile);
         sendMessage.setChatId(chatId)
                 .setText("Vamos a registrar un nuevo contacto. \n\nSi no tiene alguno de los datos solicitados puede presionar el boton de siguiente.");
 

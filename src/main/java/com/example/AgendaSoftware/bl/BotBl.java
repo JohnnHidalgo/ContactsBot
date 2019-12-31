@@ -68,8 +68,8 @@ public class BotBl {
                     .setText("DEFAULT por null");
         }
         else {
-
-            if(messageInput.equals("Menú Principal") || messageInput.equals("Cancelar")){
+            if(!update.getMessage().hasPhoto()&& (messageInput.equals("Menú Principal") || messageInput.equals("Cancelar")) ){
+                registerCounter=0;
                 registerFlag=false;
                 messageBl.principalMenu(update, user,sendMessage,sendPhoto);
             }
