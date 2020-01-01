@@ -31,6 +31,9 @@ public class BotBl {
     private ContactRepository contactRepository;
     public Boolean firstMessage = true;
     public Boolean registerFlag = false;
+    public Boolean deleteFlag = false;
+    public Boolean updateFlag = false;
+    public Boolean addNumberFlag = false;
     public int registerCounter =0;
     MessageBl messageBl;
 
@@ -71,6 +74,9 @@ public class BotBl {
             if(!update.getMessage().hasPhoto()&& (messageInput.equals("Menú Principal") || messageInput.equals("Cancelar")) ){
                 registerCounter=0;
                 registerFlag=false;
+                deleteFlag = false;
+                updateFlag = false;
+                addNumberFlag=false;
                 messageBl.principalMenu(update, user,sendMessage,sendPhoto);
             }
             if(registerFlag == true){
@@ -83,6 +89,8 @@ public class BotBl {
                     messageBl.registerConact(update, user,sendMessage,sendPhoto, registerFlag, registerCounter);
                     registerCounter++;
                 }
+            }else if(deleteFlag == true && firstMessage==false){
+                messageBl.deleteContact(update,user,sendMessage,sendPhoto);
             }
             else if (messageInput.equals("Inicio") || firstMessage==false){
                 firstMessage = false;
@@ -100,6 +108,9 @@ public class BotBl {
                             messageBl.principalMenu(update, user,sendMessage,sendPhoto);
                             break;
                         case "Enlistar":
+                            deleteFlag= false;
+                            updateFlag = false;
+                            addNumberFlag = false;
                             messageBl.listContact(update, user,sendMessage,sendPhoto);
                             break;
                         case "Buscar":
@@ -108,6 +119,12 @@ public class BotBl {
                         case "Información":
                             messageBl.infoApp(update, user,sendMessage,sendPhoto);
                             break;
+
+                        case "Eliminar Contacto":
+                            deleteFlag = true;
+                            messageBl.startDeleteContact(update, user,sendMessage,sendPhoto);
+                            break;
+
 //                        case "Buscar":
 //                            messageBl.findContact(update, user,sendMessage,sendPhoto);
 //                            User user1 = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());

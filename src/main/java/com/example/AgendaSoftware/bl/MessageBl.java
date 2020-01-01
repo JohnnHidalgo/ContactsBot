@@ -10,7 +10,6 @@ import com.example.AgendaSoftware.dto.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -18,7 +17,6 @@ import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-
 import java.util.*;
 
 @Service
@@ -61,53 +59,6 @@ public class MessageBl {
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
-
-    /*
-    List<Contact> contactList = new ArrayList<>();
-         contactList = messageBl.listaDeContactpos(sendMessage,messageTextReceived);
-
-         LOGGER.info(contactList.get(0).getFirstName());
-
-         contactList.size();
-         sendMessage.setChatId(chatId)
-                 .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail()+"\n"+
-                         contactList.get(1).getFirstName()+"\n"+ contactList.get(1).getSecondName()+"\n"+contactList.get(1).getMail());
-         break;
-     */
-
-    public List<Contact> listaDeContactpos(SendMessage sendMessage){
-        User userTest = userRepository.findByIdUserbot(sendMessage.getChatId());
-        List<Contact> contactList = contactRepository.findAll();
-
-        return contactList;
-    }
-
-    public void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto) {
-        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-
-        LOGGER.info("USER"+user.getIdUser().toString());//id usuario
-        LOGGER.info("USER"+user.getIdUserbot());
-        LOGGER.info("USER"+user.getName());
-        LOGGER.info("USER"+user.getLastName());
-        LOGGER.info("USER"+user.getTxHost());
-        LOGGER.info("USER"+user.getTxDate());
-
-        List<Contact> userContactList = new ArrayList<>();
-        int userIdMessage= user.getIdUser();
-        String responceContacts = "";
-        List<Contact> contactList = new ArrayList<>();
-        contactList = listaDeContactpos(sendMessage);
-        for (int i=0; i<contactList.size();i++){
-            if(userIdMessage == contactList.get(i).getIdUserContact().getIdUser() && contactList.get(i).getStatus()==1){
-                userContactList.add(contactList.get(i));
-                responceContacts = responceContacts +contactList.get(i).getFirstName()+" "+contactList.get(i).getFirstLastName()+" "+contactList.get(i).getMail()+"\n";
-            }
-        }
-        long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Estamos en Enlistar\n\n"+responceContacts);
-    }
-
     public void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         sendMessage.setChatId(chatId)
@@ -118,6 +69,87 @@ public class MessageBl {
         long chatId = update.getMessage().getChatId();
         sendMessage.setChatId(chatId)
                 .setText("Estamos en Información");
+    }
+
+
+
+    public List<Contact> listAllContacts(SendMessage sendMessage){
+        List<Contact> contactList = contactRepository.findAll();
+        return contactList;
+    }
+
+    public String listUserContacts(SendMessage sendMessage,User user,List<Contact> userContactList){
+
+        int userIdMessage= user.getIdUser();
+        String responceContacts = "";
+        List<Contact> contactList = new ArrayList<>();
+        contactList = listAllContacts(sendMessage);
+        for (int i=0; i<contactList.size();i++){
+            if(userIdMessage == contactList.get(i).getIdUserContact().getIdUser() && contactList.get(i).getStatus()==1){
+                userContactList.add(contactList.get(i));
+                responceContacts = responceContacts +contactList.get(i).getFirstName()+" "+contactList.get(i).getFirstLastName()+" "+contactList.get(i).getMail()+"\n";
+            }
+        }
+
+        return responceContacts;
+    }
+
+    public void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto) {
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        KeyboardRow rowOne = new KeyboardRow();
+
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(sendMessage,user, userContactList);
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Enlistar\n\n"+responceContacts);
+
+        row.add("Actualizar Contacto");
+        row.add("Eliminar Contacto");
+        rowOne.add("Agregar Nuevo Numero");
+        rowOne.add("Menú Principal");
+
+        keyboard.add(row);
+        keyboard.add(rowOne);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    public void startDeleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(sendMessage,user, userContactList);
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Eliminar\n\n"+responceContacts);
+        row.add("Empezar");
+        keyboard.add(row);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    public void deleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        keyboardMarkup.setResizeKeyboard(true);
+
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Eliminar con botones\n\n");
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(sendMessage,user, userContactList);
+        keyboardMarkup.setKeyboard(keywordDeleteContact(userContactList));
+        sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
     public void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
@@ -413,6 +445,21 @@ public class MessageBl {
                 keyboard.add(row);
                 break;
         }
+        return keyboard;
+    }
+
+
+    public static List<KeyboardRow> keywordDeleteContact(List<Contact> userContactList) {
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row= new KeyboardRow();
+        LOGGER.info("Size"+userContactList.size());
+
+
+        for (int i=0; i<userContactList.size();i++){
+            row.add(userContactList.get(i).getFirstName());
+//            row.add("usuario"+i);
+        }
+                keyboard.add(row);
         return keyboard;
     }
 
