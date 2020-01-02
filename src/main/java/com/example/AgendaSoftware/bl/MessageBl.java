@@ -25,6 +25,7 @@ public class MessageBl {
 
     private static final Logger LOGGER= LoggerFactory.getLogger(MessageBl.class);
     private static List<String> registUserList= new ArrayList<>();
+    public boolean startflag = true;
     private ContactRepository contactRepository;
     private UserRepository userRepository;
     private PhoneRepository phoneRepository;
@@ -135,21 +136,45 @@ public class MessageBl {
     }
 
     public void deleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-
-        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-
         long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Estamos en Eliminar con botones\n\n");
-        List<Contact> userContactList = new ArrayList<>();
 
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
+        if(startflag == true || update.getMessage().getText() =="Empezar"){
+            startflag= false;
+            user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+            sendMessage.setChatId(chatId)
+                    .setText("Seleccioina el contacto que desea eliminar");
+            List<Contact> userContactList = new ArrayList<>();
+            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+            List<KeyboardRow> keyboard = new ArrayList<>();
+            String responceContacts = listUserContacts(sendMessage,user, userContactList);
+            keyboard = keywordDeleteContact(userContactList);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+        }
+        else{
+            String contactDataMessage = update.getMessage().getText();
+            String contactDataDelete[] = contactDataMessage.split(" ");
 
-        String responceContacts = listUserContacts(sendMessage,user, userContactList);
-        keyboard = keywordDeleteContact(userContactList);
-        keyboardMarkup.setKeyboard(keyboard);
-        sendMessage.setReplyMarkup(keyboardMarkup);
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(sendMessage,user, userContactList);
+
+
+            Contact contact = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(contactDataDelete[0])){
+                    contact = userContactList.get(i);
+
+                }
+            }
+            contact.setStatus(Status.INACTIVE.getStatus());
+            contactRepository.save(contact);
+
+            sendMessage.setChatId(chatId)
+                    .setText("Eliminado");
+            startflag = false;
+        }
+
+
     }
 
     public void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
