@@ -26,6 +26,7 @@ public class MessageBl {
     private static final Logger LOGGER= LoggerFactory.getLogger(MessageBl.class);
     private static List<String> registUserList= new ArrayList<>();
     public boolean startflag = true;
+    public boolean updateflag = false;
     private ContactRepository contactRepository;
     private UserRepository userRepository;
     private PhoneRepository phoneRepository;
@@ -41,48 +42,24 @@ public class MessageBl {
         this.phoneRepository = phoneRepository;
     }
 
-    public void principalMenu(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        long chatId = update.getMessage().getChatId();
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        KeyboardRow rowOne = new KeyboardRow();
-        sendMessage.setChatId(chatId)
-                .setText("Menú");
-        row.add("Registrar Contacto");
-        row.add("Enlistar");
-        rowOne.add("Buscar");
-        rowOne.add("Información");
 
-        keyboard.add(row);
-        keyboard.add(rowOne);
-        keyboardMarkup.setKeyboard(keyboard);
-        sendMessage.setReplyMarkup(keyboardMarkup);
-    }
-
-    public void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Estamos en Buscar");
-    }
-
-    public void infoApp(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Estamos en Información");
-    }
-
-    public List<Contact> listAllContacts(SendMessage sendMessage){
+    /***List All Contact***/
+    public List<Contact> listAllContacts(){
         List<Contact> contactList = contactRepository.findAll();
         return contactList;
     }
 
-    public String listUserContacts(SendMessage sendMessage,User user,List<Contact> userContactList){
+    /***List User Contact***/
+    public String listUserContacts(User user,List<Contact> userContactList){
 
         int userIdMessage= user.getIdUser();
+
         String responceContacts = "";
         List<Contact> contactList = new ArrayList<>();
-        contactList = listAllContacts(sendMessage);
+
+        contactList = listAllContacts();
+
+
         for (int i=0; i<contactList.size();i++){
             if(userIdMessage == contactList.get(i).getIdUserContact().getIdUser() && contactList.get(i).getStatus()==1){
                 userContactList.add(contactList.get(i));
@@ -93,183 +70,34 @@ public class MessageBl {
         return responceContacts;
     }
 
-    public void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto) {
-        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        List<KeyboardButton> keyboardButtons = new ArrayList<>();
-
-        KeyboardRow row = new KeyboardRow();
-        KeyboardRow rowOne = new KeyboardRow();
-
-        List<Contact> userContactList = new ArrayList<>();
-        String responceContacts = listUserContacts(sendMessage,user, userContactList);
-        long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Estamos en Enlistar\n\n"+responceContacts);
-
-        row.add("Actualizar Contacto");
-        row.add("Eliminar Contacto");
-        rowOne.add("Agregar Nuevo Numero");
-        rowOne.add("Menú Principal");
-
-        keyboard.add(row);
-        keyboard.add(rowOne);
-        keyboardMarkup.setKeyboard(keyboard);
-        sendMessage.setReplyMarkup(keyboardMarkup);
+    /***List All Phones***/
+    public List<Phone> listAllPhones(){
+        List<Phone> contactList = phoneRepository.findAll();
+        return contactList;
     }
 
-    public void startDeleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        List<Contact> userContactList = new ArrayList<>();
-        String responceContacts = listUserContacts(sendMessage,user, userContactList);
-        long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Para eliminar un contacto, Debe seleccionar el boton del contacto que desea eliminar");
-        row.add("Empezar");
-        keyboard.add(row);
-        keyboardMarkup.setKeyboard(keyboard);
-        sendMessage.setReplyMarkup(keyboardMarkup);
-    }
+    /***List Contact Phone***/
+    public String listPhoneContacts(Contact contact,List<Phone> contactPhoneList){
 
-    public void deleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        long chatId = update.getMessage().getChatId();
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
+        int contactId = contact.getIdContact();
 
-        LOGGER.info("Verificacion"+update.getMessage().getText());
-        if (update.getMessage().getText().equals("Empezar") ) {
-            startflag = true;
-            LOGGER.info("Flag state"+ startflag);
-        }
-        if( startflag == true ){
-            startflag= false;
-            user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-            sendMessage.setChatId(chatId)
-                    .setText("Seleccioina el contacto que desea eliminar");
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(sendMessage,user, userContactList);
-            keyboard = keywordDeleteContact(userContactList);
-            keyboardMarkup.setKeyboard(keyboard);
-            sendMessage.setReplyMarkup(keyboardMarkup);
-        }
-        else{
-            KeyboardRow rowMenu = new KeyboardRow();
-            String contactDataMessage = update.getMessage().getText();
-            String contactDataDelete[] = contactDataMessage.split(" ");
+        String responcePhones = "";
+        List<Phone> phoneList = new ArrayList<>();
 
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(sendMessage,user, userContactList);
+        phoneList = listAllPhones();
 
-
-            Contact contact = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(contactDataDelete[0])){
-                    contact = userContactList.get(i);
-
-                }
+        for (int j=0; j<phoneList.size();j++){
+            if(contactId == phoneList.get(j).getIdContactPhone().getIdContact() && phoneList.get(j).getStatus()==1 ){
+                contactPhoneList.add(phoneList.get(j));
+                responcePhones = responcePhones +phoneList.get(j).getIdPhone()+""+phoneList.get(j).getNumberPhone()+"\n";
             }
-            contact.setStatus(Status.INACTIVE.getStatus());
-            contactRepository.save(contact);
-
-            sendMessage.setChatId(chatId)
-                    .setText("Contacto Eliminado Correctamente");
-            rowMenu.add("Menú Principal");
-            keyboard.add(rowMenu);
-            keyboardMarkup.setKeyboard(keyboard);
-            sendMessage.setReplyMarkup(keyboardMarkup);
-
-            startflag = false;
         }
-
-
+        return responcePhones.equals("")?"No phone":responcePhones;
     }
 
-    public void startUpdateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        List<Contact> userContactList = new ArrayList<>();
-        String responceContacts = listUserContacts(sendMessage,user, userContactList);
-        long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Para actualizar un contacto, Debe seleccionar el boton del contacto que desea actualizar");
-        row.add("Empezar");
-        keyboard.add(row);
-        keyboardMarkup.setKeyboard(keyboard);
-        sendMessage.setReplyMarkup(keyboardMarkup);
-    }
-
-    public void updateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-        long chatId = update.getMessage().getChatId();
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
-
-        if (update.getMessage().getText().equals("Empezar") ) {
-            startflag = true;
-            LOGGER.info("Flag state"+ startflag);
-        }
-        if( startflag == true ){
-            startflag= false;
-            user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-            sendMessage.setChatId(chatId)
-                    .setText("Seleccioina el contacto que desea actualizar");
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(sendMessage,user, userContactList);
-            keyboard = keywordUpdateContact(userContactList);
-            keyboardMarkup.setKeyboard(keyboard);
-            sendMessage.setReplyMarkup(keyboardMarkup);
-        }
-        else{
-            LOGGER.info("Estamos en Actualizar con botones VERIFICADO");
-            String contactDataMessage = update.getMessage().getText();
-            String contactDataDelete[] = contactDataMessage.split(" ");
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(sendMessage,user, userContactList);
-            Contact contact = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(contactDataDelete[0])){
-                    contact = userContactList.get(i);
-
-                }
-            }
-//            contact.setStatus(Status.INACTIVE.getStatus());
-//            contactRepository.save(contact);
-
-            sendMessage.setChatId(chatId)
-                    .setText("Nombre : "+contact.getFirstName()+"\n"+
-                            "Segundo Nombre : "+contact.getSecondName()+"\n"+
-                            "Primer Apellido : "+contact.getFirstLastName()+"\n"+
-                            "Segundo Apellido : "+contact.getSecondLastName()+"\n"+
-                            "Email : "+contact.getMail()+"\n"+
-                            "Fecha de Nacimiento : "+contact.getDateBorn()+"\n"+
-                            "Imagen : "+contact.getImage()+"\n"
-                    );
-            String noImage = contact.getImage();
-
-            sendPhoto.setChatId(chatId)
-                    .setPhoto(noImage.equals("No Image")?"https://www.gvsu.edu/cms4/asset/25867353-94CC-EA07-36E3D4DCA04D10A3/laker_effect_buttons_vacant(4).jpg":contact.getImage());
 
 
-            LOGGER.info("Aqui mostraremos el contacto");
-
-//            sendMessage.setChatId(chatId)
-//                    .setText("Contacto Actualizado Correctamente");
-
-            keyboard = keywordUpdateContactOptions();
-            keyboardMarkup.setKeyboard(keyboard);
-            sendMessage.setReplyMarkup(keyboardMarkup);
-
-            startflag = false;
-        }
-
-
-    }
-
+    /***Start Conversation***/
     public void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         String imageFile = "https://mainvayne123.neocities.org/bienvenido.png";
@@ -293,6 +121,27 @@ public class MessageBl {
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
+    /***Principal Menu***/
+    public void principalMenu(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        KeyboardRow rowOne = new KeyboardRow();
+        sendMessage.setChatId(chatId)
+                .setText("Menú");
+        row.add("Registrar Contacto");
+        row.add("Enlistar");
+        rowOne.add("Buscar");
+        rowOne.add("Información");
+
+        keyboard.add(row);
+        keyboard.add(rowOne);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    /***Menu option Registrar Contacto***/
     public void startRegisterContact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -306,7 +155,6 @@ public class MessageBl {
         keyboardMarkup.setKeyboard(keyboard);
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
-
     public void registerConact(Update update, User user, SendMessage sendMessage, SendPhoto sendPhoto, Boolean registerFlag, int registerCounter){
         String responce= null;
         long chatId = update.getMessage().getChatId();
@@ -317,11 +165,11 @@ public class MessageBl {
         String photoData = null;
         if(registerCounter<=10){
             sendMessage.setChatId(chatId);
-                responce = messageSaveContact(registerCounter);
-                sendMessage.setChatId(chatId)
-                        .setText(responce);
-                keyboardMarkup.setKeyboard(keywordSaveContact(registerCounter));
-                sendMessage.setReplyMarkup(keyboardMarkup);
+            responce = messageSaveContact(registerCounter);
+            sendMessage.setChatId(chatId)
+                    .setText(responce);
+            keyboardMarkup.setKeyboard(keywordSaveContact(registerCounter));
+            sendMessage.setReplyMarkup(keyboardMarkup);
 
             if(registerCounter != 0){
                 if(update.getMessage().hasPhoto()){
@@ -391,6 +239,319 @@ public class MessageBl {
         }
     }
 
+    /***Menu option Listar***/
+    public void listContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto) {
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        List<KeyboardButton> keyboardButtons = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+        KeyboardRow rowOne = new KeyboardRow();
+
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(user, userContactList);
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Enlistar\n\n"+responceContacts);
+
+        row.add("Actualizar Contacto");
+        row.add("Eliminar Contacto");
+        rowOne.add("Agregar Nuevo Numero");
+        rowOne.add("Menú Principal");
+
+        keyboard.add(row);
+        keyboard.add(rowOne);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    /***Menu option Buscar***/
+    public void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Buscar");
+    }
+
+    /***Menu option Informacion***/
+    public void infoApp(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Estamos en Información");
+    }
+
+
+    /***Listar option *Delete**/
+    public void startDeleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(user, userContactList);
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Para eliminar un contacto, Debe seleccionar el boton del contacto que desea eliminar");
+        row.add("Empezar");
+        keyboard.add(row);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    public void deleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        long chatId = update.getMessage().getChatId();
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        LOGGER.info("Verificacion"+update.getMessage().getText());
+
+        if( update.getMessage().getText().equals("Empezar") ||startflag == true ){
+            startflag= false;
+            user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+            sendMessage.setChatId(chatId)
+                    .setText("Seleccioina el contacto que desea eliminar");
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
+            keyboard = keywordDeleteContact(userContactList);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+        }
+        else{
+            KeyboardRow rowMenu = new KeyboardRow();
+            String contactDataMessage = update.getMessage().getText();
+            String contactDataDelete[] = contactDataMessage.split(" ");
+
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
+
+
+            Contact contact = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(contactDataDelete[0])){
+                    contact = userContactList.get(i);
+
+                }
+            }
+            contact.setStatus(Status.INACTIVE.getStatus());
+            contactRepository.save(contact);
+
+            sendMessage.setChatId(chatId)
+                    .setText("Contacto Eliminado Correctamente");
+            rowMenu.add("Menú Principal");
+            keyboard.add(rowMenu);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+
+            startflag = false;
+        }
+    }
+
+    /***Listar option *Update**/
+    public void startUpdateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(user, userContactList);
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Para actualizar un contacto, Debe seleccionar el boton del contacto que desea actualizar");
+        row.add("Empezar");
+        keyboard.add(row);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+
+    public void prepareUpdateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, Contact contact, List<Phone> phoneContactList){
+        long chatId = update.getMessage().getChatId();
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        if( update.getMessage().getText().equals("Empezar") ||startflag == true ){
+            startflag= false;
+            user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+            sendMessage.setChatId(chatId)
+                    .setText("Seleccioina el contacto que desea actualizar");
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts;
+            responceContacts = listUserContacts(user, userContactList);
+            keyboard = keywordUpdateContact(userContactList);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+        } else if (updateflag == false){
+            LOGGER.info("Estamos en Actualizar con botones VERIFICADO");
+            String contactDataMessage = update.getMessage().getText();
+            String contactDataDelete[] = contactDataMessage.split(" ");
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
+            List<Phone> phoneList = new ArrayList<>();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(contactDataDelete[0])){
+                    contact = userContactList.get(i);
+                }
+            }
+
+            phoneList = listAllPhones();
+
+            String responcePhone = listPhoneContacts(contact,phoneContactList);
+            LOGGER.info("Size"+phoneList.size());
+            LOGGER.info("Size"+phoneContactList.size());
+            LOGGER.info("Data phone List"+responcePhone);
+
+            LOGGER.info("Aqui mostraremos el contacto");
+
+            sendMessage.setChatId(chatId)
+                    .setText("Nombre : "+contact.getFirstName()+"\n"+
+                            "Segundo Nombre : "+contact.getSecondName()+"\n"+
+                            "Primer Apellido : "+contact.getFirstLastName()+"\n"+
+                            "Segundo Apellido : "+contact.getSecondLastName()+"\n"+
+                            "Email : "+contact.getMail()+"\n"+
+                            "Fecha de Nacimiento : "+contact.getDateBorn()+"\n"+
+                            "Telefono[s] : "+responcePhone+"\n"+
+                            "Imagen : "+contact.getImage()+"\n"
+                    );
+
+            sendPhoto.setChatId(chatId)
+                    .setPhoto(contact.getImage().equals("No Image")?"https://www.gvsu.edu/cms4/asset/25867353-94CC-EA07-36E3D4DCA04D10A3/laker_effect_buttons_vacant(4).jpg":contact.getImage());
+
+            keyboard = keywordUpdateContactOptions(contact.getIdContact());
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+
+            startflag = false;
+            updateflag = true;
+        }
+        if(updateflag){
+            if( update.getMessage().getText().equals("Nombre") ){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Nombre"+ contact.getFirstName());
+            }else if(update.getMessage().getText().equals("Segundo Nombre")){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Segundo Nombre");
+
+
+            }else if(update.getMessage().getText().equals("Primer Apellido")){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Primer Apellido");
+
+            }else if(update.getMessage().getText().equals("Segundo Apellido")){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Segundo Apellido");
+
+            }else if(update.getMessage().getText().equals("Email")){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Email");
+            }else if(update.getMessage().getText().equals("Fecha de Nacimiento")){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Fecha de Nacimiento");
+
+            }else if(update.getMessage().getText().equals("Telefono")){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Telefono");
+
+            }else if(update.getMessage().getText().equals("Imagen")){
+                sendMessage.setChatId(chatId)
+                        .setText("Estamos en Imagen");
+            }
+
+        }
+    }
+
+    public void updateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, Contact contact, List<Phone> phoneContactList){
+        long chatId = update.getMessage().getChatId();
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        if( update.getMessage().getText().equals("Nombre") ){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Nombre"+ contact.getFirstName());
+        }else if(update.getMessage().getText().equals("Segundo Nombre")){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Segundo Nombre");
+
+
+        }else if(update.getMessage().getText().equals("Primer Apellido")){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Primer Apellido");
+
+        }else if(update.getMessage().getText().equals("Segundo Apellido")){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Segundo Apellido");
+
+        }else if(update.getMessage().getText().equals("Email")){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Email");
+        }else if(update.getMessage().getText().equals("Fecha de Nacimiento")){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Fecha de Nacimiento");
+
+        }else if(update.getMessage().getText().equals("Telefono")){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Telefono");
+
+        }else if(update.getMessage().getText().equals("Imagen")){
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Imagen");
+        }
+
+
+
+
+//        else{
+//            LOGGER.info("Estamos en Actualizar con botones VERIFICADO");
+//            String contactDataMessage = update.getMessage().getText();
+//            String contactDataDelete[] = contactDataMessage.split(" ");
+//            List<Contact> userContactList = new ArrayList<>();
+//            String responceContacts = listUserContacts(user, userContactList);
+//            List<Phone> phoneList = new ArrayList<>();
+//            for (int i=0 ; i<userContactList.size();i++ ){
+//                if(userContactList.get(i).getIdContact()== Integer.parseInt(contactDataDelete[0])){
+//                    contact = userContactList.get(i);
+//                }
+//            }
+//
+//            phoneList = listAllPhones();
+//
+//            String responcePhone = listPhoneContacts(contact,phoneContactList);
+//            LOGGER.info("Size"+phoneList.size());
+//            LOGGER.info("Size"+phoneContactList.size());
+//            LOGGER.info("Data phone List"+responcePhone);
+//
+//            LOGGER.info("Aqui mostraremos el contacto");
+//
+//            sendMessage.setChatId(chatId)
+//                    .setText("Nombre : "+contact.getFirstName()+"\n"+
+//                            "Segundo Nombre : "+contact.getSecondName()+"\n"+
+//                            "Primer Apellido : "+contact.getFirstLastName()+"\n"+
+//                            "Segundo Apellido : "+contact.getSecondLastName()+"\n"+
+//                            "Email : "+contact.getMail()+"\n"+
+//                            "Fecha de Nacimiento : "+contact.getDateBorn()+"\n"+
+//                            "Telefono[s] : "+responcePhone+"\n"+
+//                            "Imagen : "+contact.getImage()+"\n"
+//                    );
+//
+//            sendPhoto.setChatId(chatId)
+//                    .setPhoto(contact.getImage().equals("No Image")?"https://www.gvsu.edu/cms4/asset/25867353-94CC-EA07-36E3D4DCA04D10A3/laker_effect_buttons_vacant(4).jpg":contact.getImage());
+//
+//            keyboard = keywordUpdateContactOptions();
+//            keyboardMarkup.setKeyboard(keyboard);
+//            sendMessage.setReplyMarkup(keyboardMarkup);
+//
+//            startflag = false;
+//        }
+    }
+
+
+
+//            contact.setStatus(Status.INACTIVE.getStatus());
+//            contactRepository.save(contact);
+//            sendMessage.setChatId(chatId)
+//                    .setText("Contacto Actualizado Correctamente");
+
+
+
+    /***Texts***/
     public static String messageSaveContact(int qu) {
         String responces=new String();
         switch (qu){
@@ -438,6 +599,7 @@ public class MessageBl {
         return responces;
     }
 
+    /***Keywords***/
     public static List<KeyboardRow> keywordSaveContact(int qu) {
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row= new KeyboardRow();
@@ -605,7 +767,7 @@ public class MessageBl {
         return keyboard;
     }
 
-    public static List<KeyboardRow> keywordUpdateContactOptions() {
+    public static List<KeyboardRow> keywordUpdateContactOptions(int contactId) {
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow rowCancel = new KeyboardRow();
         KeyboardRow rowMenu = new KeyboardRow();
@@ -615,17 +777,19 @@ public class MessageBl {
         KeyboardRow rowSecondLastName = new KeyboardRow();
         KeyboardRow rowMail = new KeyboardRow();
         KeyboardRow rowDateBorn = new KeyboardRow();
+        KeyboardRow rowPhone = new KeyboardRow();
         KeyboardRow rowImage = new KeyboardRow();
 
-        rowCancel.add("Cancelar");
-        rowMenu.add("Menú Principal");
-        rowName.add("Nombre");
-        rowSecondName.add("Segundo Nombre");
-        rowFirstLastName.add("Primer Apellido");
-        rowSecondLastName.add("Segundo Apellido");
-        rowMail.add("Email");
-        rowDateBorn.add("Fecha de Nacimiento");
-        rowImage.add("Imagen");
+        rowCancel.add(contactId+"Cancelar");
+        rowMenu.add(contactId+"Menú Principal");
+        rowName.add(contactId+"Nombre");
+        rowSecondName.add(contactId+"Segundo Nombre");
+        rowFirstLastName.add(contactId+"Primer Apellido");
+        rowSecondLastName.add(contactId+"Segundo Apellido");
+        rowMail.add(contactId+"Email");
+        rowDateBorn.add(contactId+"Fecha de Nacimiento");
+        rowPhone.add(contactId+"Telefono");
+        rowImage.add(contactId+"Imagen");
 
         keyboard.add(rowMenu);
         keyboard.add(rowCancel);
@@ -635,10 +799,9 @@ public class MessageBl {
         keyboard.add(rowSecondLastName);
         keyboard.add(rowMail);
         keyboard.add(rowDateBorn);
+        keyboard.add(rowPhone);
         keyboard.add(rowImage);
 
         return keyboard;
     }
-
-
 }
