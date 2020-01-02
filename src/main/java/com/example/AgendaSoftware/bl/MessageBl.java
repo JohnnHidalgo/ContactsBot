@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import java.util.*;
 
@@ -24,7 +25,6 @@ public class MessageBl {
 
     private static final Logger LOGGER= LoggerFactory.getLogger(MessageBl.class);
     private static List<String> registUserList= new ArrayList<>();
-
     private ContactRepository contactRepository;
     private UserRepository userRepository;
     private PhoneRepository phoneRepository;
@@ -71,8 +71,6 @@ public class MessageBl {
                 .setText("Estamos en Información");
     }
 
-
-
     public List<Contact> listAllContacts(SendMessage sendMessage){
         List<Contact> contactList = contactRepository.findAll();
         return contactList;
@@ -98,6 +96,8 @@ public class MessageBl {
         user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
+        List<KeyboardButton> keyboardButtons = new ArrayList<>();
+
         KeyboardRow row = new KeyboardRow();
         KeyboardRow rowOne = new KeyboardRow();
 
@@ -119,7 +119,6 @@ public class MessageBl {
     }
 
     public void startDeleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
-
         user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -128,7 +127,7 @@ public class MessageBl {
         String responceContacts = listUserContacts(sendMessage,user, userContactList);
         long chatId = update.getMessage().getChatId();
         sendMessage.setChatId(chatId)
-                .setText("Estamos en Eliminar\n\n"+responceContacts);
+                .setText("Para eliminar un contacto, Debe seleccionar el boton del contacto que desea eliminar");
         row.add("Empezar");
         keyboard.add(row);
         keyboardMarkup.setKeyboard(keyboard);
@@ -138,17 +137,18 @@ public class MessageBl {
     public void deleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
 
         user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        keyboardMarkup.setResizeKeyboard(true);
 
         long chatId = update.getMessage().getChatId();
         sendMessage.setChatId(chatId)
                 .setText("Estamos en Eliminar con botones\n\n");
         List<Contact> userContactList = new ArrayList<>();
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
         String responceContacts = listUserContacts(sendMessage,user, userContactList);
-        keyboardMarkup.setKeyboard(keywordDeleteContact(userContactList));
+        keyboard = keywordDeleteContact(userContactList);
+        keyboardMarkup.setKeyboard(keyboard);
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
@@ -224,8 +224,6 @@ public class MessageBl {
         }
         else{
             registUserList.add(update.getMessage().getText());
-
-
             LOGGER.info("0"+registUserList.get(0));
             LOGGER.info("1"+registUserList.get(1));
             LOGGER.info("2"+registUserList.get(2));
@@ -238,8 +236,6 @@ public class MessageBl {
             LOGGER.info("9"+registUserList.get(9));
             LOGGER.info("10"+registUserList.get(10));
             LOGGER.info("11"+registUserList.get(11));
-
-
             Calendar calendarDateBorn = Calendar.getInstance();
             calendarDateBorn.set(Calendar.YEAR, Integer.parseInt(registUserList.get(9)));
             calendarDateBorn.set(Calendar.MONTH, Integer.parseInt(registUserList.get(8))-1);
@@ -448,18 +444,21 @@ public class MessageBl {
         return keyboard;
     }
 
-
     public static List<KeyboardRow> keywordDeleteContact(List<Contact> userContactList) {
         List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row= new KeyboardRow();
-        LOGGER.info("Size"+userContactList.size());
 
-
-        for (int i=0; i<userContactList.size();i++){
-            row.add(userContactList.get(i).getFirstName());
-//            row.add("usuario"+i);
+        KeyboardRow rowContact = new KeyboardRow();
+        for(int j=0;j<userContactList.size();j++){
+            rowContact.add(userContactList.get(j).getIdContact()
+                    +" "+userContactList.get(j).getFirstName()+" "+userContactList.get(j).getFirstLastName()+" - "+userContactList.get(j).getMail());
         }
-                keyboard.add(row);
+
+        for (int i=0; i<rowContact.size();i++) {
+            KeyboardRow row = new KeyboardRow();
+            row.add(0,rowContact.get(i));
+            keyboard.add(row);
+        }
+
         return keyboard;
     }
 
