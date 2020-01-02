@@ -91,7 +91,11 @@ public class BotBl {
                 }
             }else if(deleteFlag == true && firstMessage==false){
                 messageBl.deleteContact(update,user,sendMessage,sendPhoto);
+            }else if(updateFlag == true && firstMessage==false){
+                LOGGER.info("Estamos en Actualizar con botones");
+                messageBl.updateContact(update,user,sendMessage,sendPhoto);
             }
+
             else if (messageInput.equals("Inicio") || firstMessage==false){
                 firstMessage = false;
                 try {
@@ -124,6 +128,10 @@ public class BotBl {
                             deleteFlag = true;
                             messageBl.startDeleteContact(update, user,sendMessage,sendPhoto);
                             break;
+                        case "Actualizar Contacto":
+                            updateFlag = true;
+                            messageBl.startUpdateContact(update,user,sendMessage,sendPhoto);
+
 
 //                        case "Buscar":
 //                            messageBl.findContact(update, user,sendMessage,sendPhoto);
@@ -158,7 +166,7 @@ public class BotBl {
             }
             else {
                 sendMessage.setChatId(chatId)
-                        .setText("Hola, para empezar el bot por favor escribe Inicio");
+                        .setText("Hola, para empezar el bot por favor presiona el boton Inicio");
                 row.add("Inicio");
                 keyboard.add(row);
                 keyboardMarkup.setKeyboard(keyboard);
