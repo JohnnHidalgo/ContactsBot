@@ -137,21 +137,27 @@ public class MessageBl {
 
     public void deleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
 
-        if(startflag == true || update.getMessage().getText() =="Empezar"){
+        LOGGER.info("Verificacion"+update.getMessage().getText());
+        if (update.getMessage().getText().equals("Empezar") ) {
+            startflag = true;
+            LOGGER.info("Flag state"+ startflag);
+        }
+        if( startflag == true ){
             startflag= false;
             user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
             sendMessage.setChatId(chatId)
                     .setText("Seleccioina el contacto que desea eliminar");
             List<Contact> userContactList = new ArrayList<>();
-            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-            List<KeyboardRow> keyboard = new ArrayList<>();
             String responceContacts = listUserContacts(sendMessage,user, userContactList);
             keyboard = keywordDeleteContact(userContactList);
             keyboardMarkup.setKeyboard(keyboard);
             sendMessage.setReplyMarkup(keyboardMarkup);
         }
         else{
+            KeyboardRow rowMenu = new KeyboardRow();
             String contactDataMessage = update.getMessage().getText();
             String contactDataDelete[] = contactDataMessage.split(" ");
 
@@ -171,6 +177,11 @@ public class MessageBl {
 
             sendMessage.setChatId(chatId)
                     .setText("Eliminado");
+            rowMenu.add("Menú Principal");
+            keyboard.add(rowMenu);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+
             startflag = false;
         }
 
@@ -471,13 +482,17 @@ public class MessageBl {
 
     public static List<KeyboardRow> keywordDeleteContact(List<Contact> userContactList) {
         List<KeyboardRow> keyboard = new ArrayList<>();
-
+        KeyboardRow rowCancel = new KeyboardRow();
+        KeyboardRow rowMenu = new KeyboardRow();
         KeyboardRow rowContact = new KeyboardRow();
         for(int j=0;j<userContactList.size();j++){
             rowContact.add(userContactList.get(j).getIdContact()
                     +" "+userContactList.get(j).getFirstName()+" "+userContactList.get(j).getFirstLastName()+" - "+userContactList.get(j).getMail());
         }
-
+        rowCancel.add("Cancelar");
+        rowMenu.add("Menú Principal");
+        keyboard.add(rowMenu);
+        keyboard.add(rowCancel);
         for (int i=0; i<rowContact.size();i++) {
             KeyboardRow row = new KeyboardRow();
             row.add(0,rowContact.get(i));
