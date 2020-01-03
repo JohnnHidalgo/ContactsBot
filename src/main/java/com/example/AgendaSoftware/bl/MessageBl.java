@@ -395,8 +395,8 @@ public class MessageBl {
             keyboard = keywordUpdateContact(userContactList);
             keyboardMarkup.setKeyboard(keyboard);
             sendMessage.setReplyMarkup(keyboardMarkup);
-        } else if (updateflag == false){
-            LOGGER.info("Estamos en Actualizar con botones VERIFICADO");
+        }
+        else if (updateflag == false){
             String contactDataMessage = update.getMessage().getText();
             String contactDataDelete[] = contactDataMessage.split(" ");
             List<Contact> userContactList = new ArrayList<>();
@@ -411,9 +411,6 @@ public class MessageBl {
             phoneList = listAllPhones();
 
             String responcePhone = listPhoneContacts(contact,phoneContactList);
-            LOGGER.info("Size"+phoneList.size());
-            LOGGER.info("Size"+phoneContactList.size());
-            LOGGER.info("Data phone List"+responcePhone);
 
             LOGGER.info("Aqui mostraremos el contacto");
 
@@ -438,38 +435,8 @@ public class MessageBl {
             startflag = false;
             updateflag = true;
         }
-        if (updateNameFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
 
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");//[0]id del contacto
-
-
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-
-
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
-
-            LOGGER.info("Informacion para sacar contacto"+messageData[0]);
-            LOGGER.info(update.getMessage().getText());
-
-
-            LOGGER.info("Contacto a actualizar"+ contactUpdate.getFirstName());
-
-            contactUpdate.setFirstName(update.getMessage().getText());
-            contactRepository.save(contactUpdate);
-
-            sendMessage.setChatId(chatId)
-                    .setText("Nombre actualizado");
-            updateNameFlag = false;
-
-        }else if(updateflag){
+        else if(updateflag &&  !updateNameFlag && !updateSecondNameFlag && !updateLastNameFlag && !updateSecondLastNameFlag && !updateEmailFlag && !updateDateBornFlag && !updatePhoneFlag && !updateImageFlag ){
             String contactDataMessage = update.getMessage().getText();
             String messageData[] = contactDataMessage.split(" ");//[0]id del contacto
 
@@ -506,99 +473,119 @@ public class MessageBl {
                 sendMessage.setChatId(chatId)
                         .setText("Ingrese la nuevo Imagen");
             }
+        }
+        else if (updateNameFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
+
+            String contactDataMessageUpdate = lastMessage.getInMessage();
+            String messageData[] = contactDataMessageUpdate.split(" ");//[0]id del contacto
+
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
+
+            Contact contactUpdate = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                    contactUpdate = userContactList.get(i);
+                }
+            }
+            contactUpdate.setFirstName(update.getMessage().getText());
+            contactRepository.save(contactUpdate);
+            sendMessage.setChatId(chatId)
+                    .setText("Nombre actualizado");
+            updateNameFlag = false;
+            updateflag = false;
 
         }
+        else if (updateSecondNameFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
 
-//            contact.setStatus(Status.INACTIVE.getStatus());
-//            contactRepository.save(contact);
-//            sendMessage.setChatId(chatId)
-//                    .setText("Contacto Actualizado Correctamente");
-    }
+            String contactDataMessageUpdate = lastMessage.getInMessage();
+            String messageData[] = contactDataMessageUpdate.split(" ");
 
-    public void updateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, Contact contact, List<Phone> phoneContactList){
-        long chatId = update.getMessage().getChatId();
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
 
-        if( update.getMessage().getText().equals("Nombre") ){
+            Contact contactUpdate = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                    contactUpdate = userContactList.get(i);
+                }
+            }
+            contactUpdate.setSecondName(update.getMessage().getText());
+            contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
-                    .setText("Estamos en Nombre"+ contact.getFirstName());
-        }else if(update.getMessage().getText().equals("Segundo Nombre")){
-            sendMessage.setChatId(chatId)
-                    .setText("Estamos en Segundo Nombre");
-
-
-        }else if(update.getMessage().getText().equals("Primer Apellido")){
-            sendMessage.setChatId(chatId)
-                    .setText("Estamos en Primer Apellido");
-
-        }else if(update.getMessage().getText().equals("Segundo Apellido")){
-            sendMessage.setChatId(chatId)
-                    .setText("Estamos en Segundo Apellido");
-
-        }else if(update.getMessage().getText().equals("Email")){
-            sendMessage.setChatId(chatId)
-                    .setText("Estamos en Email");
-        }else if(update.getMessage().getText().equals("Fecha de Nacimiento")){
-            sendMessage.setChatId(chatId)
-                    .setText("Estamos en Fecha de Nacimiento");
-
-        }else if(update.getMessage().getText().equals("Telefono")){
-            sendMessage.setChatId(chatId)
-                    .setText("Estamos en Telefono");
-
-        }else if(update.getMessage().getText().equals("Imagen")){
-            sendMessage.setChatId(chatId)
-                    .setText("Estamos en Imagen");
+                    .setText("Nombre actualizado");
+            updateSecondNameFlag = false;
+            updateflag = false;
         }
+        else if (updateLastNameFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
 
+            String contactDataMessageUpdate = lastMessage.getInMessage();
+            String messageData[] = contactDataMessageUpdate.split(" ");
 
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
 
+            Contact contactUpdate = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                    contactUpdate = userContactList.get(i);
+                }
+            }
+            contactUpdate.setFirstLastName(update.getMessage().getText());
+            contactRepository.save(contactUpdate);
+            sendMessage.setChatId(chatId)
+                    .setText("Nombre actualizado");
+            updateLastNameFlag = false;
+            updateflag = false;
+        }
+        else if (updateSecondLastNameFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
 
-//        else{
-//            LOGGER.info("Estamos en Actualizar con botones VERIFICADO");
-//            String contactDataMessage = update.getMessage().getText();
-//            String contactDataDelete[] = contactDataMessage.split(" ");
-//            List<Contact> userContactList = new ArrayList<>();
-//            String responceContacts = listUserContacts(user, userContactList);
-//            List<Phone> phoneList = new ArrayList<>();
-//            for (int i=0 ; i<userContactList.size();i++ ){
-//                if(userContactList.get(i).getIdContact()== Integer.parseInt(contactDataDelete[0])){
-//                    contact = userContactList.get(i);
-//                }
-//            }
-//
-//            phoneList = listAllPhones();
-//
-//            String responcePhone = listPhoneContacts(contact,phoneContactList);
-//            LOGGER.info("Size"+phoneList.size());
-//            LOGGER.info("Size"+phoneContactList.size());
-//            LOGGER.info("Data phone List"+responcePhone);
-//
-//            LOGGER.info("Aqui mostraremos el contacto");
-//
-//            sendMessage.setChatId(chatId)
-//                    .setText("Nombre : "+contact.getFirstName()+"\n"+
-//                            "Segundo Nombre : "+contact.getSecondName()+"\n"+
-//                            "Primer Apellido : "+contact.getFirstLastName()+"\n"+
-//                            "Segundo Apellido : "+contact.getSecondLastName()+"\n"+
-//                            "Email : "+contact.getMail()+"\n"+
-//                            "Fecha de Nacimiento : "+contact.getDateBorn()+"\n"+
-//                            "Telefono[s] : "+responcePhone+"\n"+
-//                            "Imagen : "+contact.getImage()+"\n"
-//                    );
-//
-//            sendPhoto.setChatId(chatId)
-//                    .setPhoto(contact.getImage().equals("No Image")?"https://www.gvsu.edu/cms4/asset/25867353-94CC-EA07-36E3D4DCA04D10A3/laker_effect_buttons_vacant(4).jpg":contact.getImage());
-//
-//            keyboard = keywordUpdateContactOptions();
-//            keyboardMarkup.setKeyboard(keyboard);
-//            sendMessage.setReplyMarkup(keyboardMarkup);
-//
-//            startflag = false;
-//        }
+            String contactDataMessageUpdate = lastMessage.getInMessage();
+            String messageData[] = contactDataMessageUpdate.split(" ");
+
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
+
+            Contact contactUpdate = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                    contactUpdate = userContactList.get(i);
+                }
+            }
+            contactUpdate.setSecondLastName(update.getMessage().getText());
+            contactRepository.save(contactUpdate);
+            sendMessage.setChatId(chatId)
+                    .setText("Nombre actualizado");
+            updateSecondLastNameFlag = false;
+            updateflag = false;
+        }
+        else if (updateEmailFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
+
+            String contactDataMessageUpdate = lastMessage.getInMessage();
+            String messageData[] = contactDataMessageUpdate.split(" ");
+
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
+
+            Contact contactUpdate = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                    contactUpdate = userContactList.get(i);
+                }
+            }
+            contactUpdate.setMail(update.getMessage().getText());
+            contactRepository.save(contactUpdate);
+            sendMessage.setChatId(chatId)
+                    .setText("Nombre actualizado");
+            updateEmailFlag = false;
+            updateflag = false;
+        }
     }
-
 
     /***Texts***/
     public static String messageSaveContact(int qu) {
@@ -829,8 +816,8 @@ public class MessageBl {
         KeyboardRow rowPhone = new KeyboardRow();
         KeyboardRow rowImage = new KeyboardRow();
 
-        rowCancel.add(contactId+" Cancelar");
-        rowMenu.add(contactId+" Menú Principal");
+        rowCancel.add("Cancelar");
+        rowMenu.add("Menú Principal");
         rowName.add(contactId+" Nombre");
         rowSecondName.add(contactId+" Segundo Nombre");
         rowFirstLastName.add(contactId+" Primer Apellido");
