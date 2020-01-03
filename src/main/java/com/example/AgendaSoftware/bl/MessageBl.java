@@ -1,8 +1,10 @@
 package com.example.AgendaSoftware.bl;
 
+import com.example.AgendaSoftware.dao.ChatRepository;
 import com.example.AgendaSoftware.dao.ContactRepository;
 import com.example.AgendaSoftware.dao.PhoneRepository;
 import com.example.AgendaSoftware.dao.UserRepository;
+import com.example.AgendaSoftware.domain.Chat;
 import com.example.AgendaSoftware.domain.Contact;
 import com.example.AgendaSoftware.domain.Phone;
 import com.example.AgendaSoftware.domain.User;
@@ -27,19 +29,33 @@ public class MessageBl {
     private static List<String> registUserList= new ArrayList<>();
     public boolean startflag = true;
     public boolean updateflag = false;
+    /******/
+
+    public boolean updateNameFlag = false;
+    public boolean updateSecondNameFlag = false;
+    public boolean updateLastNameFlag = false;
+    public boolean updateSecondLastNameFlag = false;
+    public boolean updateEmailFlag = false;
+    public boolean updateDateBornFlag = false;
+    public boolean updatePhoneFlag = false;
+    public boolean updateImageFlag = false;
+
+
     private ContactRepository contactRepository;
     private UserRepository userRepository;
     private PhoneRepository phoneRepository;
+    private ChatRepository chatRepository;
     private PhoneBl phoneBl;
     private ContactBl contactBl;
 
     @Autowired
-    public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository, PhoneRepository phoneRepository){
+    public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository, PhoneRepository phoneRepository, ChatRepository chatRepository){
         this.phoneBl = phoneBl;
         this.contactBl = contactBl;
         this.contactRepository = contactRepository;
         this.userRepository = userRepository;
         this.phoneRepository = phoneRepository;
+        this.chatRepository = chatRepository;
     }
 
 
@@ -422,40 +438,81 @@ public class MessageBl {
             startflag = false;
             updateflag = true;
         }
-        if(updateflag){
-            if( update.getMessage().getText().equals("Nombre") ){
-                sendMessage.setChatId(chatId)
-                        .setText("Estamos en Nombre"+ contact.getFirstName());
-            }else if(update.getMessage().getText().equals("Segundo Nombre")){
-                sendMessage.setChatId(chatId)
-                        .setText("Estamos en Segundo Nombre");
+        if (updateNameFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
+
+            String contactDataMessageUpdate = lastMessage.getInMessage();
+            String messageData[] = contactDataMessageUpdate.split(" ");//[0]id del contacto
 
 
-            }else if(update.getMessage().getText().equals("Primer Apellido")){
-                sendMessage.setChatId(chatId)
-                        .setText("Estamos en Primer Apellido");
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
 
-            }else if(update.getMessage().getText().equals("Segundo Apellido")){
-                sendMessage.setChatId(chatId)
-                        .setText("Estamos en Segundo Apellido");
 
-            }else if(update.getMessage().getText().equals("Email")){
-                sendMessage.setChatId(chatId)
-                        .setText("Estamos en Email");
-            }else if(update.getMessage().getText().equals("Fecha de Nacimiento")){
-                sendMessage.setChatId(chatId)
-                        .setText("Estamos en Fecha de Nacimiento");
+            Contact contactUpdate = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                    contactUpdate = userContactList.get(i);
+                }
+            }
 
-            }else if(update.getMessage().getText().equals("Telefono")){
-                sendMessage.setChatId(chatId)
-                        .setText("Estamos en Telefono");
+            LOGGER.info("Informacion para sacar contacto"+messageData[0]);
+            LOGGER.info(update.getMessage().getText());
 
-            }else if(update.getMessage().getText().equals("Imagen")){
+
+            LOGGER.info("Contacto a actualizar"+ contactUpdate.getFirstName());
+
+            contactUpdate.setFirstName(update.getMessage().getText());
+            contactRepository.save(contactUpdate);
+
+            sendMessage.setChatId(chatId)
+                    .setText("Nombre actualizado");
+            updateNameFlag = false;
+
+        }else if(updateflag){
+            String contactDataMessage = update.getMessage().getText();
+            String messageData[] = contactDataMessage.split(" ");//[0]id del contacto
+
+            if( messageData[1].equals("Nombre") ){
+                updateNameFlag = true;
                 sendMessage.setChatId(chatId)
-                        .setText("Estamos en Imagen");
+                        .setText("Ingrese el nuevo nombre"+ messageData[0]);
+            }else if(messageData[1].equals("Segundo") && messageData[2].equals("Nombre")){
+                updateSecondNameFlag = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el nuevo Segundo Nombre"+messageData[0]);
+            }else if(messageData[1].equals("Primer") && messageData[2].equals("Apellido")){
+                updateLastNameFlag = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el nuevo Primer Apellido"+messageData[0]);
+            }else if(messageData[1].equals("Segundo") && messageData[2].equals("Apellido")){
+                updateSecondLastNameFlag = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el nuevo Segundo Apellido"+messageData[0]);
+            }else if(messageData[1].equals("Email")){
+                updateEmailFlag = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el nuevo Email");
+            }else if(messageData[1].equals("Fecha") && messageData[2].equals("de")){
+                updateDateBornFlag = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el nuevo Fecha de Nacimiento");
+            }else if(messageData[1].equals("Telefono")){
+                updatePhoneFlag = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el nuevo Telefono");
+            }else if(messageData[1].equals("Imagen")){
+                updateImageFlag = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese la nuevo Imagen");
             }
 
         }
+
+//            contact.setStatus(Status.INACTIVE.getStatus());
+//            contactRepository.save(contact);
+//            sendMessage.setChatId(chatId)
+//                    .setText("Contacto Actualizado Correctamente");
     }
 
     public void updateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, Contact contact, List<Phone> phoneContactList){
@@ -541,14 +598,6 @@ public class MessageBl {
 //            startflag = false;
 //        }
     }
-
-
-
-//            contact.setStatus(Status.INACTIVE.getStatus());
-//            contactRepository.save(contact);
-//            sendMessage.setChatId(chatId)
-//                    .setText("Contacto Actualizado Correctamente");
-
 
 
     /***Texts***/
@@ -780,16 +829,16 @@ public class MessageBl {
         KeyboardRow rowPhone = new KeyboardRow();
         KeyboardRow rowImage = new KeyboardRow();
 
-        rowCancel.add(contactId+"Cancelar");
-        rowMenu.add(contactId+"Menú Principal");
-        rowName.add(contactId+"Nombre");
-        rowSecondName.add(contactId+"Segundo Nombre");
-        rowFirstLastName.add(contactId+"Primer Apellido");
-        rowSecondLastName.add(contactId+"Segundo Apellido");
-        rowMail.add(contactId+"Email");
-        rowDateBorn.add(contactId+"Fecha de Nacimiento");
-        rowPhone.add(contactId+"Telefono");
-        rowImage.add(contactId+"Imagen");
+        rowCancel.add(contactId+" Cancelar");
+        rowMenu.add(contactId+" Menú Principal");
+        rowName.add(contactId+" Nombre");
+        rowSecondName.add(contactId+" Segundo Nombre");
+        rowFirstLastName.add(contactId+" Primer Apellido");
+        rowSecondLastName.add(contactId+" Segundo Apellido");
+        rowMail.add(contactId+" Email");
+        rowDateBorn.add(contactId+" Fecha de Nacimiento");
+        rowPhone.add(contactId+" Telefono");
+        rowImage.add(contactId+" Imagen");
 
         keyboard.add(rowMenu);
         keyboard.add(rowCancel);
