@@ -27,6 +27,7 @@ public class MessageBl {
 
     private static final Logger LOGGER= LoggerFactory.getLogger(MessageBl.class);
     private static List<String> registUserList= new ArrayList<>();
+    private static List<String> updateDateBornList= new ArrayList<>();
     public boolean startflag = true;
     public boolean updateflag = false;
     /******/
@@ -40,6 +41,7 @@ public class MessageBl {
     public boolean updatePhoneFlag = false;
     public boolean updateImageFlag = false;
 
+    int indexUpdate = 0;
 
     private ContactRepository contactRepository;
     private UserRepository userRepository;
@@ -379,13 +381,21 @@ public class MessageBl {
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
 
-    public void prepareUpdateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, Contact contact, List<Phone> phoneContactList){
+    public void prepareUpdateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, Contact contact, List<Phone> phoneContactList, Boolean updateValues){
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
 
-        if( update.getMessage().getText().equals("Empezar") ||startflag == true ){
+        if(!updateValues && (update.getMessage().getText().equals("Empezar") ||startflag)){
             startflag= false;
+            updateNameFlag = false;
+            updateSecondNameFlag = false;
+            updateLastNameFlag = false;
+            updateSecondLastNameFlag = false;
+            updateEmailFlag = false;
+            updateDateBornFlag = false;
+            updatePhoneFlag = false;
+            updateImageFlag = false;
             user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
             sendMessage.setChatId(chatId)
                     .setText("Seleccioina el contacto que desea actualizar");
@@ -435,7 +445,6 @@ public class MessageBl {
             startflag = false;
             updateflag = true;
         }
-
         else if(updateflag &&  !updateNameFlag && !updateSecondNameFlag && !updateLastNameFlag && !updateSecondLastNameFlag && !updateEmailFlag && !updateDateBornFlag && !updatePhoneFlag && !updateImageFlag ){
             String contactDataMessage = update.getMessage().getText();
             String messageData[] = contactDataMessage.split(" ");//[0]id del contacto
@@ -443,27 +452,31 @@ public class MessageBl {
             if( messageData[1].equals("Nombre") ){
                 updateNameFlag = true;
                 sendMessage.setChatId(chatId)
-                        .setText("Ingrese el nuevo nombre"+ messageData[0]);
+                        .setText("Ingrese el nuevo nombre");
             }else if(messageData[1].equals("Segundo") && messageData[2].equals("Nombre")){
                 updateSecondNameFlag = true;
                 sendMessage.setChatId(chatId)
-                        .setText("Ingrese el nuevo Segundo Nombre"+messageData[0]);
+                        .setText("Ingrese el nuevo Segundo Nombre");
             }else if(messageData[1].equals("Primer") && messageData[2].equals("Apellido")){
                 updateLastNameFlag = true;
                 sendMessage.setChatId(chatId)
-                        .setText("Ingrese el nuevo Primer Apellido"+messageData[0]);
+                        .setText("Ingrese el nuevo Primer Apellido");
             }else if(messageData[1].equals("Segundo") && messageData[2].equals("Apellido")){
                 updateSecondLastNameFlag = true;
                 sendMessage.setChatId(chatId)
-                        .setText("Ingrese el nuevo Segundo Apellido"+messageData[0]);
+                        .setText("Ingrese el nuevo Segundo Apellido");
             }else if(messageData[1].equals("Email")){
                 updateEmailFlag = true;
                 sendMessage.setChatId(chatId)
                         .setText("Ingrese el nuevo Email");
             }else if(messageData[1].equals("Fecha") && messageData[2].equals("de")){
                 updateDateBornFlag = true;
+                updateDateBornList.add(update.getMessage().getText());
                 sendMessage.setChatId(chatId)
-                        .setText("Ingrese el nuevo Fecha de Nacimiento");
+                        .setText("Ingrese el nuevo día de Nacimiento");
+                keyboardMarkup.setKeyboard(keywordUpdateDateBornContact(indexUpdate));
+                sendMessage.setReplyMarkup(keyboardMarkup);
+                indexUpdate++;
             }else if(messageData[1].equals("Telefono")){
                 updatePhoneFlag = true;
                 sendMessage.setChatId(chatId)
@@ -515,7 +528,7 @@ public class MessageBl {
             contactUpdate.setSecondName(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
-                    .setText("Nombre actualizado");
+                    .setText("Segundo Nombre actualizado");
             updateSecondNameFlag = false;
             updateflag = false;
         }
@@ -537,7 +550,7 @@ public class MessageBl {
             contactUpdate.setFirstLastName(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
-                    .setText("Nombre actualizado");
+                    .setText("Primer Apellido actualizado");
             updateLastNameFlag = false;
             updateflag = false;
         }
@@ -559,7 +572,7 @@ public class MessageBl {
             contactUpdate.setSecondLastName(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
-                    .setText("Nombre actualizado");
+                    .setText("Segundo Apellido actualizado");
             updateSecondLastNameFlag = false;
             updateflag = false;
         }
@@ -581,9 +594,60 @@ public class MessageBl {
             contactUpdate.setMail(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
-                    .setText("Nombre actualizado");
+                    .setText("Mail actualizado");
             updateEmailFlag = false;
             updateflag = false;
+        }
+        else if (updateDateBornFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
+
+            String responce ;
+
+            if(indexUpdate<3){
+                updateDateBornList.add(update.getMessage().getText());
+                sendMessage.setChatId(chatId);
+                responce = messageUpdateDateBornContact(indexUpdate);
+                sendMessage.setChatId(chatId)
+                        .setText(responce);
+                keyboardMarkup.setKeyboard(keywordUpdateDateBornContact(indexUpdate));
+                sendMessage.setReplyMarkup(keyboardMarkup);
+                indexUpdate++;
+            }
+            else{
+                updateDateBornList.add(update.getMessage().getText());
+                LOGGER.info("tamaña de nueva lista"+updateDateBornList.size());
+                LOGGER.info("tamaña de nueva lista"+updateDateBornList.get(0));
+                LOGGER.info("tamaña de nueva lista"+updateDateBornList.get(1));
+                LOGGER.info("tamaña de nueva lista"+updateDateBornList.get(2));
+                List<Contact> userContactList = new ArrayList<>();
+                String responceContacts = listUserContacts(user, userContactList);
+
+
+                String messageData[] = updateDateBornList.get(0).split(" ");
+//
+                Contact contactUpdate = new Contact();
+                for (int i=0 ; i<userContactList.size();i++ ){
+                    if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                        contactUpdate = userContactList.get(i);
+                    }
+                }
+
+
+                Calendar calendarDateBorn = Calendar.getInstance();
+                calendarDateBorn.set(Calendar.YEAR, Integer.parseInt(updateDateBornList.get(3)));
+                calendarDateBorn.set(Calendar.MONTH, Integer.parseInt(updateDateBornList.get(2))-1);
+                calendarDateBorn.set(Calendar.DAY_OF_MONTH, Integer.parseInt(updateDateBornList.get(1)));
+                Date dateBornContact = calendarDateBorn.getTime();
+
+                contactUpdate.setDateBorn(dateBornContact);
+                contactRepository.save(contactUpdate);
+                sendMessage.setChatId(chatId)
+                        .setText("Nacimiento actualizado");
+
+                updateEmailFlag = false;
+                updateflag = false;
+            }
+
         }
     }
 
@@ -630,6 +694,25 @@ public class MessageBl {
             case 9:
                 LOGGER.info("[Message] Pedir imagen");
                 responces="Ingrese imagen para el contacto";
+                break;
+        }
+        return responces;
+    }
+
+    public static String messageUpdateDateBornContact(int qu) {
+        String responces=new String();
+        switch (qu){
+            case 0:
+                LOGGER.info("[Message] Pedir dia de nacimiento");
+                responces="Ingrese dia de nacimiento";
+                break;
+            case 1:
+                LOGGER.info("[Message] Pedir mes de nacimiento");
+                responces="Ingrese mes de nacimiento";
+                break;
+            case 2:
+                LOGGER.info("[Message] Pedir año de nacimiento");
+                responces="Ingrese año de nacimiento";
                 break;
         }
         return responces;
@@ -838,6 +921,85 @@ public class MessageBl {
         keyboard.add(rowPhone);
         keyboard.add(rowImage);
 
+        return keyboard;
+    }
+
+    public static List<KeyboardRow> keywordUpdateDateBornContact(int qu) {
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row= new KeyboardRow();
+        KeyboardRow rowOne= new KeyboardRow();
+        KeyboardRow rowTwo= new KeyboardRow();
+        KeyboardRow rowThree= new KeyboardRow();
+        KeyboardRow rowFour= new KeyboardRow();
+
+        switch (qu){
+            case 0:
+                LOGGER.info("[Keyword]Pedir dia de nacimiento");
+                row.add("Cancelar");
+                rowOne.add("1");
+                rowOne.add("2");
+                rowOne.add("3");
+                rowOne.add("4");
+                rowOne.add("5");
+                rowOne.add("6");
+                rowOne.add("7");
+                rowOne.add("8");
+                rowTwo.add("9");
+                rowTwo.add("10");
+                rowTwo.add("11");
+                rowTwo.add("12");
+                rowTwo.add("13");
+                rowTwo.add("14");
+                rowTwo.add("15");
+                rowTwo.add("16");
+                rowThree.add("17");
+                rowThree.add("18");
+                rowThree.add("19");
+                rowThree.add("20");
+                rowThree.add("21");
+                rowThree.add("22");
+                rowThree.add("23");
+                rowThree.add("24");
+                rowFour.add("25");
+                rowFour.add("26");
+                rowFour.add("27");
+                rowFour.add("28");
+                rowFour.add("29");
+                rowFour.add("30");
+                rowFour.add("31");
+                keyboard.add(row);
+                keyboard.add(rowOne);
+                keyboard.add(rowTwo);
+                keyboard.add(rowThree);
+                keyboard.add(rowFour);
+
+                break;
+            case 1:
+                LOGGER.info("[Keyword]Pedir mes de nacimiento");
+                row.add("Cancelar");
+                rowOne.add("1");
+                rowOne.add("2");
+                rowOne.add("3");
+                rowTwo.add("4");
+                rowTwo.add("5");
+                rowTwo.add("7");
+                rowThree.add("8");
+                rowThree.add("9");
+                rowThree.add("10");
+                rowFour.add("11");
+                rowFour.add("12");
+                keyboard.add(row);
+                keyboard.add(rowOne);
+                keyboard.add(rowTwo);
+                keyboard.add(rowThree);
+                keyboard.add(rowFour);
+                break;
+            case 2:
+                LOGGER.info("[Keyword]Pedir año de nacimiento");
+                row.add("Cancelar");
+                keyboard.add(row);
+                break;
+        }
         return keyboard;
     }
 }

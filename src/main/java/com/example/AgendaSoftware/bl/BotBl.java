@@ -36,6 +36,9 @@ public class BotBl {
     public Boolean updateFlag = false;
     public Boolean addNumberFlag = false;
     public int registerCounter =0;
+//    -----------------------------
+    public boolean updateValues = false;
+
     MessageBl messageBl;
 
     @Autowired
@@ -81,6 +84,7 @@ public class BotBl {
                 deleteFlag = false;
                 updateFlag = false;
                 addNumberFlag=false;
+                updateValues = false;
                 messageBl.principalMenu(update, user,sendMessage,sendPhoto);
             }
             if(registerFlag == true){
@@ -100,7 +104,7 @@ public class BotBl {
 //                 if(update.getMessage().getText().equals("Nombre")  || update.getMessage().getText().equals("Segundo Nombre")|| update.getMessage().getText().equals("Primer Apellido")  || update.getMessage().getText().equals("Segundo Apellido") || update.getMessage().getText().equals("Email") ||update.getMessage().getText().equals("Fecha de Nacimiento") || update.getMessage().getText().equals("Telefono")  || update.getMessage().getText().equals("Imagen") ){
 //                     messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList);
 //                 }else{
-                messageBl.prepareUpdateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList);
+                messageBl.prepareUpdateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
 //                 }
 
             }
