@@ -49,17 +49,18 @@ public class MessageBl {
     private ChatRepository chatRepository;
     private PhoneBl phoneBl;
     private ContactBl contactBl;
+    private KeyboardBl keyboardBl;
 
     @Autowired
-    public MessageBl(PhoneBl phoneBl, ContactBl contactBl, ContactRepository contactRepository, UserRepository userRepository, PhoneRepository phoneRepository, ChatRepository chatRepository){
+    public MessageBl(PhoneBl phoneBl, ContactBl contactBl, KeyboardBl keyboardBl, ContactRepository contactRepository, UserRepository userRepository, PhoneRepository phoneRepository, ChatRepository chatRepository){
         this.phoneBl = phoneBl;
         this.contactBl = contactBl;
+        this.keyboardBl = keyboardBl;
         this.contactRepository = contactRepository;
         this.userRepository = userRepository;
         this.phoneRepository = phoneRepository;
         this.chatRepository = chatRepository;
     }
-
 
     /***List All Contact***/
     public List<Contact> listAllContacts(){
@@ -111,6 +112,22 @@ public class MessageBl {
             }
         }
         return responcePhones.equals("")?"No phone":responcePhones;
+    }
+
+    /***Choose contact for update***/
+    public Contact chooseContactForUpdate(User user){
+        Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
+        String contactDataMessageUpdate = lastMessage.getInMessage();
+        String messageData[] = contactDataMessageUpdate.split(" ");
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(user, userContactList);
+        Contact contactUpdate = new Contact();
+        for (int i=0 ; i<userContactList.size();i++ ){
+            if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                contactUpdate = userContactList.get(i);
+            }
+        }
+        return contactUpdate;
     }
 
     /***Start Conversation***/
@@ -184,7 +201,7 @@ public class MessageBl {
             responce = messageSaveContact(registerCounter);
             sendMessage.setChatId(chatId)
                     .setText(responce);
-            keyboardMarkup.setKeyboard(keywordSaveContact(registerCounter));
+            keyboardMarkup.setKeyboard(KeyboardBl.keywordSaveContact(registerCounter));
             sendMessage.setReplyMarkup(keyboardMarkup);
 
             if(registerCounter != 0){
@@ -326,7 +343,7 @@ public class MessageBl {
                     .setText("Seleccioina el contacto que desea eliminar");
             List<Contact> userContactList = new ArrayList<>();
             String responceContacts = listUserContacts(user, userContactList);
-            keyboard = keywordDeleteContact(userContactList);
+            keyboard = KeyboardBl.keywordDeleteContact(userContactList);
             keyboardMarkup.setKeyboard(keyboard);
             sendMessage.setReplyMarkup(keyboardMarkup);
         }
@@ -397,7 +414,7 @@ public class MessageBl {
             List<Contact> userContactList = new ArrayList<>();
             String responceContacts;
             responceContacts = listUserContacts(user, userContactList);
-            keyboard = keywordUpdateContact(userContactList);
+            keyboard = KeyboardBl.keywordUpdateContact(userContactList);
             keyboardMarkup.setKeyboard(keyboard);
             sendMessage.setReplyMarkup(keyboardMarkup);
         }
@@ -434,7 +451,7 @@ public class MessageBl {
             sendPhoto.setChatId(chatId)
                     .setPhoto(contact.getImage().equals("No Image")?"https://www.gvsu.edu/cms4/asset/25867353-94CC-EA07-36E3D4DCA04D10A3/laker_effect_buttons_vacant(4).jpg":contact.getImage());
 
-            keyboard = keywordUpdateContactOptions(contact.getIdContact());
+            keyboard = KeyboardBl.keywordUpdateContactOptions(contact.getIdContact());
             keyboardMarkup.setKeyboard(keyboard);
             sendMessage.setReplyMarkup(keyboardMarkup);
 
@@ -452,7 +469,6 @@ public class MessageBl {
         else if(updateflag &&  !updateNameFlag && !updateSecondNameFlag && !updateLastNameFlag && !updateSecondLastNameFlag && !updateEmailFlag && !updateDateBornFlag && !updatePhoneFlag && !updateImageFlag ){
             String contactDataMessage = update.getMessage().getText();
             String messageData[] = contactDataMessage.split(" ");//[0]id del contacto
-
             if( messageData[1].equals("Nombre") ){
                 updateNameFlag = true;
                 sendMessage.setChatId(chatId)
@@ -483,7 +499,7 @@ public class MessageBl {
                 updateDateBornList.add(update.getMessage().getText());
                 sendMessage.setChatId(chatId)
                         .setText("Ingrese el nuevo día de Nacimiento");
-                keyboardMarkup.setKeyboard(keywordUpdateDateBornContact(indexUpdate));
+                keyboardMarkup.setKeyboard(KeyboardBl.keywordUpdateDateBornContact(indexUpdate));
                 sendMessage.setReplyMarkup(keyboardMarkup);
                 indexUpdate++;
             }
@@ -499,43 +515,16 @@ public class MessageBl {
             }
         }
         else if (updateNameFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
-
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");//[0]id del contacto
-
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
+            Contact contactUpdate = chooseContactForUpdate(user);
             contactUpdate.setFirstName(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
                     .setText("Nombre actualizado");
             updateNameFlag = false;
             updateflag = false;
-
         }
         else if (updateSecondNameFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
-
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");
-
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
+            Contact contactUpdate = chooseContactForUpdate(user);
             contactUpdate.setSecondName(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
@@ -544,20 +533,7 @@ public class MessageBl {
             updateflag = false;
         }
         else if (updateLastNameFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
-
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");
-
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
+            Contact contactUpdate = chooseContactForUpdate(user);
             contactUpdate.setFirstLastName(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
@@ -566,20 +542,7 @@ public class MessageBl {
             updateflag = false;
         }
         else if (updateSecondLastNameFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
-
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");
-
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
+            Contact contactUpdate = chooseContactForUpdate(user);
             contactUpdate.setSecondLastName(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
@@ -588,20 +551,8 @@ public class MessageBl {
             updateflag = false;
         }
         else if (updateEmailFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
 
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");
-
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
+            Contact contactUpdate = chooseContactForUpdate(user);
             contactUpdate.setMail(update.getMessage().getText());
             contactRepository.save(contactUpdate);
             sendMessage.setChatId(chatId)
@@ -610,7 +561,6 @@ public class MessageBl {
             updateflag = false;
         }
         else if (updateDateBornFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
 
             String responce ;
 
@@ -620,7 +570,7 @@ public class MessageBl {
                 responce = messageUpdateDateBornContact(indexUpdate);
                 sendMessage.setChatId(chatId)
                         .setText(responce);
-                keyboardMarkup.setKeyboard(keywordUpdateDateBornContact(indexUpdate));
+                keyboardMarkup.setKeyboard(KeyboardBl.keywordUpdateDateBornContact(indexUpdate));
                 sendMessage.setReplyMarkup(keyboardMarkup);
                 indexUpdate++;
             }
@@ -630,6 +580,7 @@ public class MessageBl {
                 LOGGER.info("tamaña de nueva lista"+updateDateBornList.get(0));
                 LOGGER.info("tamaña de nueva lista"+updateDateBornList.get(1));
                 LOGGER.info("tamaña de nueva lista"+updateDateBornList.get(2));
+                Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
                 List<Contact> userContactList = new ArrayList<>();
                 String responceContacts = listUserContacts(user, userContactList);
                 String messageData[] = updateDateBornList.get(0).split(" ");
@@ -662,28 +613,11 @@ public class MessageBl {
 
         }
         else if (updatePhoneFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
 
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");
-
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-
+            Contact contactUpdate = chooseContactForUpdate(user);
             List<Phone> phoneList = new ArrayList<>();
-
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
-            //tenemos el contacto
             phoneList = listAllPhones();
-
             String responcePhone = listPhoneContacts(contactUpdate,phoneContactList);
-
-
 
             if(phoneContactList.size()==0){
                 Phone phoneUpdate = new Phone();
@@ -696,27 +630,15 @@ public class MessageBl {
                 phoneUpdate.setNumberPhone(update.getMessage().getText());
                 phoneRepository.save(phoneUpdate);
             }
-
-
             sendMessage.setChatId(chatId)
                     .setText("Telefono actualizado");
             updatePhoneFlag = false;
             updateflag = false;
         }
         else if (updateImageFlag== true) {
-            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
-            String contactDataMessageUpdate = lastMessage.getInMessage();
-            String messageData[] = contactDataMessageUpdate.split(" ");
-            List<Contact> userContactList = new ArrayList<>();
-            String responceContacts = listUserContacts(user, userContactList);
-            String photoData = null;
-            Contact contactUpdate = new Contact();
-            for (int i=0 ; i<userContactList.size();i++ ){
-                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
-                    contactUpdate = userContactList.get(i);
-                }
-            }
 
+            Contact contactUpdate = chooseContactForUpdate(user);
+            String photoData = null;
                 List<PhotoSize> photos = update.getMessage().getPhoto();
                 photoData = photos.stream()
                         .sorted(Comparator.comparing(PhotoSize::getFileSize).reversed())
@@ -800,288 +722,4 @@ public class MessageBl {
         return responces;
     }
 
-    /***Keywords***/
-    public static List<KeyboardRow> keywordSaveContact(int qu) {
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row= new KeyboardRow();
-        KeyboardRow rowOne= new KeyboardRow();
-        KeyboardRow rowTwo= new KeyboardRow();
-        KeyboardRow rowThree= new KeyboardRow();
-        KeyboardRow rowFour= new KeyboardRow();
-
-        switch (qu){
-            case 0:
-                LOGGER.info("[Keyword]Pedir de Primer Nombre");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-            case 1:
-                LOGGER.info("[Keyword]Pedir de Segundo Nombre");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-            case 2:
-                LOGGER.info("[Keyword]Pedir primer apellido");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-            case 3:
-                LOGGER.info("[Keyword]Pedir segundo Apellido");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-            case 4:
-                LOGGER.info("[Keyword]Pedir correo");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-            case 5:
-                LOGGER.info("[Keyword]Pedir numero");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                break;
-            case 6:
-                LOGGER.info("[Keyword]Pedir dia de nacimiento");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                rowOne.add("1");
-                rowOne.add("2");
-                rowOne.add("3");
-                rowOne.add("4");
-                rowOne.add("5");
-                rowOne.add("6");
-                rowOne.add("7");
-                rowOne.add("8");
-                rowTwo.add("9");
-                rowTwo.add("10");
-                rowTwo.add("11");
-                rowTwo.add("12");
-                rowTwo.add("13");
-                rowTwo.add("14");
-                rowTwo.add("15");
-                rowTwo.add("16");
-                rowThree.add("17");
-                rowThree.add("18");
-                rowThree.add("19");
-                rowThree.add("20");
-                rowThree.add("21");
-                rowThree.add("22");
-                rowThree.add("23");
-                rowThree.add("24");
-                rowFour.add("25");
-                rowFour.add("26");
-                rowFour.add("27");
-                rowFour.add("28");
-                rowFour.add("29");
-                rowFour.add("30");
-                rowFour.add("31");
-                keyboard.add(row);
-                keyboard.add(rowOne);
-                keyboard.add(rowTwo);
-                keyboard.add(rowThree);
-                keyboard.add(rowFour);
-
-                break;
-            case 7:
-                LOGGER.info("[Keyword]Pedir mes de nacimiento");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                rowOne.add("1");
-                rowOne.add("2");
-                rowOne.add("3");
-                rowTwo.add("4");
-                rowTwo.add("5");
-                rowTwo.add("7");
-                rowThree.add("8");
-                rowThree.add("9");
-                rowThree.add("10");
-                rowFour.add("11");
-                rowFour.add("12");
-                keyboard.add(row);
-                keyboard.add(rowOne);
-                keyboard.add(rowTwo);
-                keyboard.add(rowThree);
-                keyboard.add(rowFour);
-                break;
-            case 8:
-                LOGGER.info("[Keyword]Pedir año de nacimiento");
-                row.add("Siguiente");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-            case 9:
-                LOGGER.info("[Keyword]Pedir imagen");
-                row.add("Guardar");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-        }
-        return keyboard;
-    }
-
-    public static List<KeyboardRow> keywordDeleteContact(List<Contact> userContactList) {
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow rowCancel = new KeyboardRow();
-        KeyboardRow rowMenu = new KeyboardRow();
-        KeyboardRow rowContact = new KeyboardRow();
-        for(int j=0;j<userContactList.size();j++){
-            rowContact.add(userContactList.get(j).getIdContact()
-                    +" "+userContactList.get(j).getFirstName()+" "+userContactList.get(j).getFirstLastName()+" - "+userContactList.get(j).getMail());
-        }
-        rowCancel.add("Cancelar");
-        rowMenu.add("Menú Principal");
-        keyboard.add(rowMenu);
-        keyboard.add(rowCancel);
-        for (int i=0; i<rowContact.size();i++) {
-            KeyboardRow row = new KeyboardRow();
-            row.add(0,rowContact.get(i));
-            keyboard.add(row);
-        }
-
-        return keyboard;
-    }
-
-    public static List<KeyboardRow> keywordUpdateContact(List<Contact> userContactList) {
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow rowCancel = new KeyboardRow();
-        KeyboardRow rowMenu = new KeyboardRow();
-        KeyboardRow rowContact = new KeyboardRow();
-        for(int j=0;j<userContactList.size();j++){
-            rowContact.add(userContactList.get(j).getIdContact()
-                    +" "+userContactList.get(j).getFirstName()+" "+userContactList.get(j).getFirstLastName()+" - "+userContactList.get(j).getMail());
-        }
-        rowCancel.add("Cancelar");
-        rowMenu.add("Menú Principal");
-        keyboard.add(rowMenu);
-        keyboard.add(rowCancel);
-        for (int i=0; i<rowContact.size();i++) {
-            KeyboardRow row = new KeyboardRow();
-            row.add(0,rowContact.get(i));
-            keyboard.add(row);
-        }
-
-        return keyboard;
-    }
-
-    public static List<KeyboardRow> keywordUpdateContactOptions(int contactId) {
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow rowCancel = new KeyboardRow();
-        KeyboardRow rowMenu = new KeyboardRow();
-        KeyboardRow rowName = new KeyboardRow();
-        KeyboardRow rowSecondName = new KeyboardRow();
-        KeyboardRow rowFirstLastName = new KeyboardRow();
-        KeyboardRow rowSecondLastName = new KeyboardRow();
-        KeyboardRow rowMail = new KeyboardRow();
-        KeyboardRow rowDateBorn = new KeyboardRow();
-        KeyboardRow rowPhone = new KeyboardRow();
-        KeyboardRow rowImage = new KeyboardRow();
-
-        rowCancel.add("Cancelar");
-        rowMenu.add("Menú Principal");
-        rowName.add(contactId+" Nombre");
-        rowSecondName.add(contactId+" Segundo Nombre");
-        rowFirstLastName.add(contactId+" Primer Apellido");
-        rowSecondLastName.add(contactId+" Segundo Apellido");
-        rowMail.add(contactId+" Email");
-        rowDateBorn.add(contactId+" Fecha de Nacimiento");
-        rowPhone.add(contactId+" Telefono");
-        rowImage.add(contactId+" Imagen");
-
-        keyboard.add(rowMenu);
-        keyboard.add(rowCancel);
-        keyboard.add(rowName);
-        keyboard.add(rowSecondName);
-        keyboard.add(rowFirstLastName);
-        keyboard.add(rowSecondLastName);
-        keyboard.add(rowMail);
-        keyboard.add(rowDateBorn);
-        keyboard.add(rowPhone);
-        keyboard.add(rowImage);
-
-        return keyboard;
-    }
-
-    public static List<KeyboardRow> keywordUpdateDateBornContact(int qu) {
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row= new KeyboardRow();
-        KeyboardRow rowOne= new KeyboardRow();
-        KeyboardRow rowTwo= new KeyboardRow();
-        KeyboardRow rowThree= new KeyboardRow();
-        KeyboardRow rowFour= new KeyboardRow();
-
-        switch (qu){
-            case 0:
-                LOGGER.info("[Keyword]Pedir dia de nacimiento");
-                row.add("Cancelar");
-                rowOne.add("1");
-                rowOne.add("2");
-                rowOne.add("3");
-                rowOne.add("4");
-                rowOne.add("5");
-                rowOne.add("6");
-                rowOne.add("7");
-                rowOne.add("8");
-                rowTwo.add("9");
-                rowTwo.add("10");
-                rowTwo.add("11");
-                rowTwo.add("12");
-                rowTwo.add("13");
-                rowTwo.add("14");
-                rowTwo.add("15");
-                rowTwo.add("16");
-                rowThree.add("17");
-                rowThree.add("18");
-                rowThree.add("19");
-                rowThree.add("20");
-                rowThree.add("21");
-                rowThree.add("22");
-                rowThree.add("23");
-                rowThree.add("24");
-                rowFour.add("25");
-                rowFour.add("26");
-                rowFour.add("27");
-                rowFour.add("28");
-                rowFour.add("29");
-                rowFour.add("30");
-                rowFour.add("31");
-                keyboard.add(row);
-                keyboard.add(rowOne);
-                keyboard.add(rowTwo);
-                keyboard.add(rowThree);
-                keyboard.add(rowFour);
-
-                break;
-            case 1:
-                LOGGER.info("[Keyword]Pedir mes de nacimiento");
-                row.add("Cancelar");
-                rowOne.add("1");
-                rowOne.add("2");
-                rowOne.add("3");
-                rowTwo.add("4");
-                rowTwo.add("5");
-                rowTwo.add("7");
-                rowThree.add("8");
-                rowThree.add("9");
-                rowThree.add("10");
-                rowFour.add("11");
-                rowFour.add("12");
-                keyboard.add(row);
-                keyboard.add(rowOne);
-                keyboard.add(rowTwo);
-                keyboard.add(rowThree);
-                keyboard.add(rowFour);
-                break;
-            case 2:
-                LOGGER.info("[Keyword]Pedir año de nacimiento");
-                row.add("Cancelar");
-                keyboard.add(row);
-                break;
-        }
-        return keyboard;
-    }
 }
