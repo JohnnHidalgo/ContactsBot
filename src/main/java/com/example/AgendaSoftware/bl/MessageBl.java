@@ -24,14 +24,11 @@ import java.util.*;
 
 @Service
 public class MessageBl {
-
     private static final Logger LOGGER= LoggerFactory.getLogger(MessageBl.class);
     private static List<String> registUserList= new ArrayList<>();
     private static List<String> updateDateBornList= new ArrayList<>();
     public boolean startflag = true;
     public boolean updateflag = false;
-    /******/
-
     public boolean updateNameFlag = false;
     public boolean updateSecondNameFlag = false;
     public boolean updateLastNameFlag = false;
@@ -40,9 +37,9 @@ public class MessageBl {
     public boolean updateDateBornFlag = false;
     public boolean updatePhoneFlag = false;
     public boolean updateImageFlag = false;
+    public boolean addNumberFlag = false;
 
     int indexUpdate = 0;
-
     private ContactRepository contactRepository;
     private UserRepository userRepository;
     private PhoneRepository phoneRepository;
@@ -60,6 +57,71 @@ public class MessageBl {
         this.userRepository = userRepository;
         this.phoneRepository = phoneRepository;
         this.chatRepository = chatRepository;
+    }
+    /***Texts***/
+    public static String messageSaveContact(int qu) {
+        String responces=new String();
+        switch (qu){
+            case 0:
+                LOGGER.info("[Message] Pedir de Primer Nombre");
+                responces="Ingrese Primer Nombre";
+                break;
+            case 1:
+                LOGGER.info("[Message] Pedir de Segundo Nombre");
+                responces="Ingrese Segundo Nombre";
+                break;
+            case 2:
+                LOGGER.info("[Message] Pedir primer apellido");
+                responces="Ingrese Primer Apellido";
+                break;
+            case 3:
+                LOGGER.info("[Message] Pedir segundo Apellido");
+                responces="Ingrese segundo Apellido";
+                break;
+            case 4:
+                LOGGER.info("[Message] Pedir correo");
+                responces="Ingrese email";
+                break;
+            case 5:
+                LOGGER.info("[Message] Pedir numero");
+                responces="Ingrese numero telefónico";
+                break;
+            case 6:
+                LOGGER.info("[Message] Pedir dia de nacimiento");
+                responces="Ingrese dia de nacimiento";
+                break;
+            case 7:
+                LOGGER.info("[Message] Pedir mes de nacimiento");
+                responces="Ingrese mes de nacimiento";
+                break;
+            case 8:
+                LOGGER.info("[Message] Pedir año de nacimiento");
+                responces="Ingrese año de nacimiento";
+                break;
+            case 9:
+                LOGGER.info("[Message] Pedir imagen");
+                responces="Ingrese imagen para el contacto";
+                break;
+        }
+        return responces;
+    }
+    public static String messageUpdateDateBornContact(int qu) {
+        String responces=new String();
+        switch (qu){
+            case 0:
+                LOGGER.info("[Message] Pedir dia de nacimiento");
+                responces="Ingrese dia de nacimiento";
+                break;
+            case 1:
+                LOGGER.info("[Message] Pedir mes de nacimiento");
+                responces="Ingrese mes de nacimiento";
+                break;
+            case 2:
+                LOGGER.info("[Message] Pedir año de nacimiento");
+                responces="Ingrese año de nacimiento";
+                break;
+        }
+        return responces;
     }
 
     /***List All Contact***/
@@ -328,7 +390,6 @@ public class MessageBl {
         keyboardMarkup.setKeyboard(keyboard);
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
-
     public void deleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -393,7 +454,6 @@ public class MessageBl {
         keyboardMarkup.setKeyboard(keyboard);
         sendMessage.setReplyMarkup(keyboardMarkup);
     }
-
     public void updateContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, Contact contact, List<Phone> phoneContactList, Boolean updateValues){
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -655,71 +715,69 @@ public class MessageBl {
         }
     }
 
-    /***Texts***/
-    public static String messageSaveContact(int qu) {
-        String responces=new String();
-        switch (qu){
-            case 0:
-                LOGGER.info("[Message] Pedir de Primer Nombre");
-                responces="Ingrese Primer Nombre";
-                break;
-            case 1:
-                LOGGER.info("[Message] Pedir de Segundo Nombre");
-                responces="Ingrese Segundo Nombre";
-                break;
-            case 2:
-                LOGGER.info("[Message] Pedir primer apellido");
-                responces="Ingrese Primer Apellido";
-                break;
-            case 3:
-                LOGGER.info("[Message] Pedir segundo Apellido");
-                responces="Ingrese segundo Apellido";
-                break;
-            case 4:
-                LOGGER.info("[Message] Pedir correo");
-                responces="Ingrese email";
-                break;
-            case 5:
-                LOGGER.info("[Message] Pedir numero");
-                responces="Ingrese numero telefónico";
-                break;
-            case 6:
-                LOGGER.info("[Message] Pedir dia de nacimiento");
-                responces="Ingrese dia de nacimiento";
-                break;
-            case 7:
-                LOGGER.info("[Message] Pedir mes de nacimiento");
-                responces="Ingrese mes de nacimiento";
-                break;
-            case 8:
-                LOGGER.info("[Message] Pedir año de nacimiento");
-                responces="Ingrese año de nacimiento";
-                break;
-            case 9:
-                LOGGER.info("[Message] Pedir imagen");
-                responces="Ingrese imagen para el contacto";
-                break;
+    /***Agregar Nuevo Numero***/
+    public void startAddNumber(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto) {
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        List<Contact> userContactList = new ArrayList<>();
+        String responceContacts = listUserContacts(user, userContactList);
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId)
+                .setText("Para agregar un nuevo numero, Debe seleccionar el boton del contacto al que desea agregar");
+        row.add("Empezar");
+        keyboard.add(row);
+        keyboardMarkup.setKeyboard(keyboard);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+    }
+    public void addNumber(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, List<Phone> phoneContactList) {
+        user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+        long chatId = update.getMessage().getChatId();
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        if(update.getMessage().getText().equals("Empezar")){
+            startflag= false;
+            addNumberFlag = false;
+            user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
+            sendMessage.setChatId(chatId)
+                    .setText("Seleccioina el contacto que desea actualizar");
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts;
+            responceContacts = listUserContacts(user, userContactList);
+            keyboard = KeyboardBl.keywordUpdateContact(userContactList);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+        }else if(!addNumberFlag) {
+            sendMessage.setChatId(chatId)
+                    .setText("Ingrese el nuevo numero");
+            addNumberFlag = true;
+        }else if(addNumberFlag) {
+            Contact contactUpdate = chooseContactForUpdate(user);
+            List<Phone> phoneList = new ArrayList<>();
+            phoneList = listAllPhones();
+            String responcePhone = listPhoneContacts(contactUpdate,phoneContactList);
+
+            if(phoneContactList.size()==0){
+                Phone phoneUpdate = new Phone();
+                phoneUpdate.setIdContactPhone(contactUpdate);
+                phoneUpdate.setStatus(Status.ACTIVE.getStatus());
+                phoneUpdate.setNumberPhone(update.getMessage().getText());
+                phoneRepository.save(phoneUpdate);
+            }else{
+                Phone phoneUpdate = new Phone();
+                phoneUpdate.setIdContactPhone(contactUpdate);
+                phoneUpdate.setStatus(Status.ACTIVE.getStatus());
+                phoneUpdate.setNumberPhone(update.getMessage().getText());
+                phoneRepository.save(phoneUpdate);
+            }
+            sendMessage.setChatId(chatId)
+                    .setText("Telefono actualizado");
         }
-        return responces;
+        updatePhoneFlag = false;
+        updateflag = false;
     }
 
-    public static String messageUpdateDateBornContact(int qu) {
-        String responces=new String();
-        switch (qu){
-            case 0:
-                LOGGER.info("[Message] Pedir dia de nacimiento");
-                responces="Ingrese dia de nacimiento";
-                break;
-            case 1:
-                LOGGER.info("[Message] Pedir mes de nacimiento");
-                responces="Ingrese mes de nacimiento";
-                break;
-            case 2:
-                LOGGER.info("[Message] Pedir año de nacimiento");
-                responces="Ingrese año de nacimiento";
-                break;
-        }
-        return responces;
-    }
 
 }

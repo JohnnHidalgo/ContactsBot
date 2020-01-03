@@ -105,11 +105,9 @@ public class BotBl {
                 }else if(updateFlag == true && firstMessage==false&& update.getMessage().hasPhoto()){
                     messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
                 }
-
-
-
+            }else if(addNumberFlag == true && firstMessage==false){
+                messageBl.addNumber(update,user,sendMessage,sendPhoto, phoneContactList);
             }
-
             else if (messageInput.equals("Inicio") || firstMessage==false){
                 firstMessage = false;
                 try {
@@ -145,7 +143,9 @@ public class BotBl {
                         case "Actualizar Contacto":
                             updateFlag = true;
                             messageBl.startUpdateContact(update,user,sendMessage,sendPhoto);
-
+                        case "Agregar Nuevo Numero":
+                            addNumberFlag = true;
+                            messageBl.startAddNumber(update,user,sendMessage,sendPhoto);
 
 //                        case "Buscar":
 //                            messageBl.findContact(update, user,sendMessage,sendPhoto);
