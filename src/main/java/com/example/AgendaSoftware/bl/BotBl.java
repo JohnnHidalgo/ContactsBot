@@ -100,8 +100,14 @@ public class BotBl {
             }else if(deleteFlag == true && firstMessage==false){
                 messageBl.deleteContact(update,user,sendMessage,sendPhoto);
             }else if(updateFlag == true && firstMessage==false){
-                LOGGER.info("Estamos en Actualizar con botones");
-                messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
+                if(updateFlag == true && firstMessage==false&& !update.getMessage().hasPhoto()){
+                    messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
+                }else if(updateFlag == true && firstMessage==false&& update.getMessage().hasPhoto()){
+                    messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
+                }
+
+
+
             }
 
             else if (messageInput.equals("Inicio") || firstMessage==false){

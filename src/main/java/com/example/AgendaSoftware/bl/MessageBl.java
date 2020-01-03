@@ -113,8 +113,6 @@ public class MessageBl {
         return responcePhones.equals("")?"No phone":responcePhones;
     }
 
-
-
     /***Start Conversation***/
     public void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
@@ -196,7 +194,6 @@ public class MessageBl {
                             .sorted(Comparator.comparing(PhotoSize::getFileSize).reversed())
                             .findFirst()
                             .orElse(null).getFileId();
-
                     registUserList.add(photoData);
                 }
                 else {
@@ -298,7 +295,6 @@ public class MessageBl {
                 .setText("Estamos en Información");
     }
 
-
     /***Listar option *Delete**/
     public void startDeleteContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         user = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
@@ -385,7 +381,7 @@ public class MessageBl {
         long chatId = update.getMessage().getChatId();
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
-        if(!updateValues && (update.getMessage().getText().equals("Empezar") ||startflag)){
+        if(!updateValues && !update.getMessage().hasPhoto() && ( startflag || update.getMessage().getText().equals("Empezar"))){
             startflag= false;
             updateNameFlag = false;
             updateSecondNameFlag = false;
@@ -704,10 +700,37 @@ public class MessageBl {
 
             sendMessage.setChatId(chatId)
                     .setText("Telefono actualizado");
-            updateEmailFlag = false;
+            updatePhoneFlag = false;
             updateflag = false;
         }
+        else if (updateImageFlag== true) {
+            Chat lastMessage = chatRepository.findLastChatByUserId(user.getIdUser());
+            String contactDataMessageUpdate = lastMessage.getInMessage();
+            String messageData[] = contactDataMessageUpdate.split(" ");
+            List<Contact> userContactList = new ArrayList<>();
+            String responceContacts = listUserContacts(user, userContactList);
+            String photoData = null;
+            Contact contactUpdate = new Contact();
+            for (int i=0 ; i<userContactList.size();i++ ){
+                if(userContactList.get(i).getIdContact()== Integer.parseInt(messageData[0])){
+                    contactUpdate = userContactList.get(i);
+                }
+            }
 
+                List<PhotoSize> photos = update.getMessage().getPhoto();
+                photoData = photos.stream()
+                        .sorted(Comparator.comparing(PhotoSize::getFileSize).reversed())
+                        .findFirst()
+                        .orElse(null).getFileId();
+                contactUpdate.setImage(photoData);
+                contactRepository.save(contactUpdate);
+
+            LOGGER.info("Imagen actualizada");
+            sendMessage.setChatId(chatId)
+                    .setText("Imagen actualizado");
+            updateImageFlag = false;
+            updateflag = false;
+        }
     }
 
     /***Texts***/
