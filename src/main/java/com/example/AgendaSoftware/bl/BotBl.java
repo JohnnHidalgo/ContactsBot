@@ -101,12 +101,7 @@ public class BotBl {
                 messageBl.deleteContact(update,user,sendMessage,sendPhoto);
             }else if(updateFlag == true && firstMessage==false){
                 LOGGER.info("Estamos en Actualizar con botones");
-//                 if(update.getMessage().getText().equals("Nombre")  || update.getMessage().getText().equals("Segundo Nombre")|| update.getMessage().getText().equals("Primer Apellido")  || update.getMessage().getText().equals("Segundo Apellido") || update.getMessage().getText().equals("Email") ||update.getMessage().getText().equals("Fecha de Nacimiento") || update.getMessage().getText().equals("Telefono")  || update.getMessage().getText().equals("Imagen") ){
-//                     messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList);
-//                 }else{
-                messageBl.prepareUpdateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
-//                 }
-
+                messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
             }
 
             else if (messageInput.equals("Inicio") || firstMessage==false){
