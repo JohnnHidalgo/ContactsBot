@@ -35,9 +35,10 @@ public class BotBl {
     public Boolean deleteFlag = false;
     public Boolean updateFlag = false;
     public Boolean addNumberFlag = false;
+    public Boolean findContact = false;
     public int registerCounter =0;
 
-    public boolean updateValues = false;
+    public Boolean updateValues = false;
 
     MessageBl messageBl;
 
@@ -67,6 +68,7 @@ public class BotBl {
         String imageFile = null;
         Contact contact = new Contact();
         List<Phone> phoneContactList = new ArrayList<>();
+        List<Contact> contactList = new ArrayList<>();
 
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -85,6 +87,7 @@ public class BotBl {
                 updateFlag = false;
                 addNumberFlag=false;
                 updateValues = false;
+                findContact = false;
                 messageBl.principalMenu(update, user,sendMessage,sendPhoto);
             }
             if(registerFlag == true){
@@ -105,6 +108,8 @@ public class BotBl {
                 }else if(updateFlag == true && firstMessage==false&& update.getMessage().hasPhoto()){
                     messageBl.updateContact(update,user,sendMessage,sendPhoto, contact, phoneContactList, updateValues);
                 }
+            }else if( findContact == true && firstMessage==false){
+                messageBl.findContact(update,user,sendMessage,sendPhoto, phoneContactList, contactList);
             }else if(addNumberFlag == true && firstMessage==false){
                 messageBl.addNumber(update,user,sendMessage,sendPhoto, phoneContactList);
             }
@@ -130,7 +135,8 @@ public class BotBl {
                             messageBl.listContact(update, user,sendMessage,sendPhoto);
                             break;
                         case "Buscar":
-                            messageBl.findContact(update, user,sendMessage,sendPhoto);
+                            findContact = true;
+                            messageBl.findContact(update, user,sendMessage,sendPhoto,phoneContactList, contactList );
                             break;
                         case "Información":
                             messageBl.infoApp(update, user,sendMessage,sendPhoto);

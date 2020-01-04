@@ -38,6 +38,8 @@ public class MessageBl {
     public boolean updatePhoneFlag = false;
     public boolean updateImageFlag = false;
     public boolean addNumberFlag = false;
+    public boolean findByPhone = false;
+    public boolean findByName = false;
 
     int indexUpdate = 0;
     private ContactRepository contactRepository;
@@ -187,6 +189,16 @@ public class MessageBl {
         return contactUpdate;
     }
 
+
+    public Contact findContactForResponce(List<Contact> contactList, int idContact){
+        Contact contactoParaResponder = new Contact();
+        for (int i =0 ;i<contactList.size();i++){
+            if(contactList.get(i).getIdContact() == idContact){
+                contactoParaResponder = contactList.get(i);
+            }
+        }
+        return contactoParaResponder;
+    }
     /***Start Conversation***/
     public void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();
@@ -356,10 +368,89 @@ public class MessageBl {
     }
 
     /***Menu option Buscar***/
-    public void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
+    public void findContact(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto, List<Phone> phoneList, List<Contact> contactList){
+
         long chatId = update.getMessage().getChatId();
-        sendMessage.setChatId(chatId)
-                .setText("Estamos en Buscar");
+        String buildResponce = " ";
+        List<Phone> phoneListresponce = new ArrayList<>();
+        if (update.getMessage().getText().equals("Por nombre") || findByName){
+            if(!findByName){
+                findByName = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el Nombre");
+            }else {
+                findByName = false;
+                List<Contact> userContactList = new ArrayList<>();
+                String responceContacts = listUserContacts(user, userContactList);
+                LOGGER.info("tamaño de contacto"+userContactList.size());
+
+                for(int i=0;i<userContactList.size();i++){
+                    if(userContactList.get(i).getFirstName().contains(update.getMessage().getText())){
+                        contactList.add(userContactList.get(i));
+                        buildResponce =buildResponce + " "+userContactList.get(i).getIdContact()+ " "+userContactList.get(i).getFirstName()+ " "+userContactList.get(i).getSecondName()+ " "+userContactList.get(i).getFirstLastName()+ " "+userContactList.get(i).getSecondLastName()+ "\n";
+                    }
+                    else if(userContactList.get(i).getSecondName().contains(update.getMessage().getText())){
+                        contactList.add(userContactList.get(i));
+                        buildResponce =buildResponce + " "+userContactList.get(i).getIdContact()+ " "+userContactList.get(i).getFirstName()+ " "+userContactList.get(i).getSecondName()+ " "+userContactList.get(i).getFirstLastName()+ " "+userContactList.get(i).getSecondLastName()+ "\n";
+                    }
+                    else if(userContactList.get(i).getFirstLastName().contains(update.getMessage().getText())){
+                        contactList.add(userContactList.get(i));
+                        buildResponce =buildResponce + " "+userContactList.get(i).getIdContact()+ " "+userContactList.get(i).getFirstName()+ " "+userContactList.get(i).getSecondName()+ " "+userContactList.get(i).getFirstLastName()+ " "+userContactList.get(i).getSecondLastName()+ "\n";
+                    }
+                    else if(userContactList.get(i).getSecondLastName().contains(update.getMessage().getText())){
+                        contactList.add(userContactList.get(i));
+                        buildResponce =buildResponce + " "+userContactList.get(i).getIdContact()+ " "+userContactList.get(i).getFirstName()+ " "+userContactList.get(i).getSecondName()+ " "+userContactList.get(i).getFirstLastName()+ " "+userContactList.get(i).getSecondLastName()+ "\n";
+                    }
+                }
+                LOGGER.info("Tamaño final"+contactList.size());
+                sendMessage.setChatId(chatId)
+                        .setText(buildResponce);
+            }
+        }else if(update.getMessage().getText().equals("Por telefono") || findByPhone){
+            if(!findByPhone){
+                findByPhone = true;
+                sendMessage.setChatId(chatId)
+                        .setText("Ingrese el Numero");
+            }else {
+                List<Contact> userContactList = new ArrayList<>();
+                String responceContacts = listUserContacts(user, userContactList);
+
+                Contact contactForResponce = new Contact();
+                findByPhone = false;
+                Contact contactUpdate = contactRepository.findById(user);
+                List <Contact> contactResponce = new ArrayList<>();
+                List<Phone> phoneListRecived = new ArrayList<>();
+                phoneListRecived = listAllPhones();
+                String responcePhone = listPhoneContacts(contactUpdate,phoneList);
+                LOGGER.info("tamaño de phone"+phoneListRecived.size());
+                for(int i=0;i<phoneListRecived.size();i++){
+                    if(phoneListRecived.get(i).getNumberPhone().contains(update.getMessage().getText())) {
+                        LOGGER.info("tamaño de User Contact List " + userContactList.size());
+                        LOGGER.info("*********id  " + phoneListRecived.get(i).getIdContactPhone().getIdContact());
+                        contactForResponce = findContactForResponce(userContactList,phoneListRecived.get(i).getIdContactPhone().getIdContact());
+                        LOGGER.info("**Contacto creado  " + contactForResponce.getFirstName());
+                        if(contactForResponce.getFirstName() !=null){
+                            phoneListresponce.add(phoneListRecived.get(i));
+                            buildResponce =buildResponce + " "+ contactForResponce.getFirstName()+" "+ contactForResponce.getFirstLastName()+" "+phoneListRecived.get(i).getNumberPhone()+ "\n";
+                        }
+                    }
+                }
+                sendMessage.setChatId(chatId)
+                        .setText(buildResponce);
+            }
+        }else{
+            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+            List<KeyboardRow> keyboard = new ArrayList<>();
+            KeyboardRow row = new KeyboardRow();
+            sendMessage.setChatId(chatId)
+                    .setText("Estamos en Buscar");
+            row.add("Por nombre");
+            row.add("Por telefono");
+            row.add("Cancelar");
+            keyboard.add(row);
+            keyboardMarkup.setKeyboard(keyboard);
+            sendMessage.setReplyMarkup(keyboardMarkup);
+        }
     }
 
     /***Menu option Informacion***/
