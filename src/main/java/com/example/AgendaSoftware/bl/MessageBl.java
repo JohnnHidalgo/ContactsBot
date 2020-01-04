@@ -132,14 +132,10 @@ public class MessageBl {
 
     /***List User Contact***/
     public String listUserContacts(User user,List<Contact> userContactList){
-
         int userIdMessage= user.getIdUser();
-
         String responceContacts = "";
         List<Contact> contactList = new ArrayList<>();
-
         contactList = listAllContacts();
-
 
         for (int i=0; i<contactList.size();i++){
             if(userIdMessage == contactList.get(i).getIdUserContact().getIdUser() && contactList.get(i).getStatus()==1){
@@ -147,7 +143,6 @@ public class MessageBl {
                 responceContacts = responceContacts +contactList.get(i).getFirstName()+" "+contactList.get(i).getFirstLastName()+" "+contactList.get(i).getMail()+"\n";
             }
         }
-
         return responceContacts;
     }
 

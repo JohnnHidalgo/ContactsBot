@@ -36,7 +36,7 @@ public class BotBl {
     public Boolean updateFlag = false;
     public Boolean addNumberFlag = false;
     public int registerCounter =0;
-//    -----------------------------
+
     public boolean updateValues = false;
 
     MessageBl messageBl;
@@ -200,7 +200,7 @@ public class BotBl {
         chatRepository.save(chat);
     }
 
-    private User initUser(org.telegram.telegrambots.meta.api.objects.User user){
+    public User initUser(org.telegram.telegrambots.meta.api.objects.User user){
         boolean result = false;
         User userBotBl = userRepository.findByIdUserbot(user.getId().toString());
 

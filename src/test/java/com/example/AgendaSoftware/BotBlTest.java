@@ -1,0 +1,39 @@
+package com.example.AgendaSoftware;
+
+import com.example.AgendaSoftware.bl.*;
+import com.example.AgendaSoftware.dao.ChatRepository;
+import com.example.AgendaSoftware.dao.ContactRepository;
+import com.example.AgendaSoftware.dao.PhoneRepository;
+import com.example.AgendaSoftware.dao.UserRepository;
+import com.example.AgendaSoftware.domain.Chat;
+import com.example.AgendaSoftware.domain.Phone;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.Contact;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+public class BotBlTest {
+
+    @Test
+    void initUserTest() {
+        UserRepository userRepository = Mockito.mock(UserRepository.class);
+        PhoneRepository phoneRepository = Mockito.mock(PhoneRepository.class);
+        ChatRepository chatRepository = Mockito.mock(ChatRepository.class);
+        ContactRepository contactRepository = Mockito.mock(ContactRepository.class);
+        MessageBl messageBl = Mockito.mock(MessageBl.class);
+        User user = Mockito.mock(User.class);
+        Mockito.doReturn(1234).when(user).getId();
+        Mockito.doReturn("Juan").when(user).getFirstName();
+        Mockito.doReturn("Perez").when(user).getLastName();
+        BotBl botBl = new BotBl(userRepository,phoneRepository,chatRepository,contactRepository, messageBl);
+        com.example.AgendaSoftware.domain.User userResponce = botBl.initUser(user);
+        assertNotNull(userResponce);
+    }
+}
