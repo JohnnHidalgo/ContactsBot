@@ -152,32 +152,6 @@ public class BotBl {
                         case "Agregar Nuevo Numero":
                             addNumberFlag = true;
                             messageBl.startAddNumber(update,user,sendMessage,sendPhoto);
-
-//                        case "Buscar":
-//                            messageBl.findContact(update, user,sendMessage,sendPhoto);
-//                            User user1 = userRepository.findByIdUserbot(update.getMessage().getChatId().toString());
-//                            List<Contact> contactList = contactRepository.findAllByIdUserContact(user1);
-
-//                            List<Contact> contactList = new ArrayList<>();
-//                            contactList = messageBl.listaDeContactos(sendMessage,messageTextReceived);
-//
-//                            LOGGER.info(contactList.get(0).getFirstName());
-//
-//                            contactList.size();
-//                            sendMessage.setChatId(chatId)
-//                                    .setText(contactList.get(0).getFirstName()+"\n"+ contactList.get(0).getSecondName()+"\n"+contactList.get(0).getMail()+"\n"+
-//                                            contactList.get(1).getFirstName()+"\n"+ contactList.get(1).getSecondName()+"\n"+contactList.get(1).getMail());
-//                            break;
-
-//                        default:
-//                            sendMessage.setChatId(chatId)
-//                                    .setText("No lo entiendo\n");
-//                            row.add("Soy Docente");
-//                            row.add("Soy Estudiante");
-//                            keyboard.add(row);
-//                            keyboardMarkup.setKeyboard(keyboard);
-//                            sendMessage.setReplyMarkup(keyboardMarkup);
-//                            break;
                     }
                 } catch (NumberFormatException nfe){
                     sendMessage.setChatId(chatId)

@@ -199,6 +199,7 @@ public class MessageBl {
         }
         return contactoParaResponder;
     }
+
     /***Start Conversation***/
     public void startConversation(Update update, User user,SendMessage sendMessage,SendPhoto sendPhoto){
         long chatId = update.getMessage().getChatId();

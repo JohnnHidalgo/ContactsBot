@@ -10,7 +10,4 @@ public interface PhoneRepository extends JpaRepository<Phone, Integer> {
     public Phone findphoneByContactId(Integer userId);
 
     List<Phone> findAllByStatus(int status);
-
-
-
 }
